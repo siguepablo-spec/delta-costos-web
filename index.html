@@ -9862,10 +9862,7 @@
   }
 
   function ticketMoney(value) {
-    return '
-  </body>
-</html>
- + Math.round(Number(value) || 0).toLocaleString('en-US');
+    return '$' + Math.round(Number(value) || 0).toLocaleString('en-US');
   }
 
   function formatTicketQty(value) {
