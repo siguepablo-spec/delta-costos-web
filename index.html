@@ -6166,11 +6166,71 @@
 
   .staff-mov {
     display: grid;
-    grid-template-columns: 3.4rem minmax(0, 1fr) auto;
+    grid-template-columns: 3.4rem minmax(0, 1fr) 7rem 7rem 8rem;
     align-items: baseline;
     gap: 10px;
     padding: 7px 0;
     border-bottom: 1px solid rgba(41, 57, 76, 0.6);
+  }
+
+  .col-num {
+    font-family: var(--mono);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .staff-mov-cabecera {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--surface);
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .staff-mov-cabecera .col-num {
+    font-family: inherit;
+  }
+
+  .mov-entrada {
+    font-size: 0.94rem;
+    font-weight: 600;
+    color: var(--cobrado);
+  }
+
+  .mov-salida {
+    font-size: 0.94rem;
+    color: var(--muted);
+  }
+
+  .mov-saldo {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  /* En pantalla chica entrada y salida comparten la MISMA columna. Cada fila
+     tiene una sola de las dos con contenido, asi que no se pisan, y se gana el
+     ancho que hace falta para que el saldo no quede apretado. */
+  @media (max-width: 760px) {
+    .staff-mov {
+      grid-template-columns: 2.8rem minmax(0, 1fr) 5.5rem 6.5rem;
+    }
+
+    .staff-mov-cabecera {
+      display: none;
+    }
+
+    .mov-entrada,
+    .mov-salida {
+      grid-column: 3;
+    }
+
+    .mov-saldo {
+      grid-column: 4;
+    }
   }
 
   .mov-fecha {
@@ -8809,9 +8869,19 @@
       elegido.sueldoMensual ? `Sueldo ${money.format(elegido.sueldoMensual)} por mes` : '';
     document.getElementById('staffSaldo').textContent = money.format(elegido.saldo);
 
-    // Del mas nuevo al mas viejo: lo que interesa es lo ultimo que paso.
+    // Del mas nuevo al mas viejo: asi lo que se debe HOY queda arriba de todo y
+    // no hay que bajar setenta filas para verlo. El saldo de cada renglon es
+    // como quedo la cuenta despues de ese movimiento, igual que en la planilla.
     const movs = elegido.movimientos.slice().reverse();
-    document.getElementById('staffMovs').innerHTML = movs.map(m => `
+    document.getElementById('staffMovs').innerHTML = `
+      <li class="staff-mov staff-mov-cabecera">
+        <span>Fecha</span>
+        <span>Concepto</span>
+        <span class="col-num">Entrada</span>
+        <span class="col-num">Salida</span>
+        <span class="col-num">Saldo</span>
+      </li>
+    ` + movs.map(m => `
       <li class="staff-mov tipo-${escapeHtml(m.tipo)}">
         <span class="mov-fecha">${escapeHtml(formatFechaCorta(m.fecha))}</span>
         <span class="mov-concepto">
@@ -8819,7 +8889,9 @@
           ${m.nota ? `<em>${escapeHtml(m.nota)}</em>` : ''}
           ${m.origen === 'importado' ? '<b class="mov-viejo">planilla</b>' : ''}
         </span>
-        <strong class="mov-monto">${m.tipo === 'resta' ? '−' : '+'} ${money.format(m.monto)}</strong>
+        <span class="mov-entrada col-num">${m.entrada ? money.format(m.entrada) : ''}</span>
+        <span class="mov-salida col-num">${m.salida ? money.format(m.salida) : ''}</span>
+        <strong class="mov-saldo col-num">${money.format(m.saldo)}</strong>
       </li>
     `).join('');
   }
