@@ -5884,6 +5884,199 @@
   body.es-prueba .prueba-solo-en-prueba {
     display: block;
   }
+
+  /* ------------------------------------------------------------------
+     MACHETE DE MANO DE OBRA
+
+     Se consulta parado al lado del auto y con el telefono en la mano: manda
+     el precio, las horas van al costado como referencia, y el nombre del
+     trabajo tiene que leerse sin esfuerzo. Nada de tabla apretada.
+     ------------------------------------------------------------------ */
+  .hora-barra {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 14px;
+    margin: 0 0 14px;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .hora-campo label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .hora-entrada {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+  }
+
+  .hora-entrada span {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .hora-entrada input {
+    width: 7.5rem;
+    padding: 2px 6px;
+    border: 0;
+    border-bottom: 2px solid var(--line);
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--display);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .hora-entrada input:focus {
+    border-bottom-color: var(--accent);
+    outline: none;
+  }
+
+  .hora-entrada small {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .hora-pie {
+    margin: 4px 0 0;
+    font-size: 0.74rem;
+    color: var(--muted);
+  }
+
+  /* Mientras hay un aumento sin aplicar, el sello lo canta: la grilla ya
+     muestra los precios nuevos y hay que dejar clarisimo que TODAVIA no se
+     guardaron. */
+  .hora-pie .en-borrador {
+    color: var(--falta);
+    font-weight: 600;
+  }
+
+  .hora-iva {
+    margin-left: auto;
+  }
+
+  .labor-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .labor-rubro h3 {
+    margin: 0 0 6px;
+    font-family: var(--display);
+    font-size: 1.02rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .labor-fila {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 4.5rem 8rem;
+    align-items: center;
+    gap: 12px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    cursor: pointer;
+  }
+
+  .labor-fila + .labor-fila {
+    margin-top: 5px;
+  }
+
+  .labor-fila:hover,
+  .labor-fila:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  .labor-nombre {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .labor-nombre strong {
+    font-size: 1.02rem;
+    font-weight: 600;
+  }
+
+  .labor-nombre span {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .labor-horas-val {
+    font-family: var(--mono);
+    font-size: 0.94rem;
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .labor-precio {
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .labor-horas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  @media (max-width: 620px) {
+    .hora-iva {
+      margin-left: 0;
+    }
+
+    .labor-fila {
+      grid-template-columns: minmax(0, 1fr) 4rem;
+      row-gap: 4px;
+    }
+
+    .labor-precio {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .labor-horas-val {
+      grid-column: 2;
+      text-align: right;
+    }
+  }
+
+  body.mobile-large .labor-fila {
+    grid-template-columns: minmax(0, 1fr) 5rem;
+    min-height: 64px;
+  }
+
+  body.mobile-large .labor-precio {
+    grid-column: 2;
+    grid-row: 1;
+  }
 </style>
   </head>
   <body>
@@ -5948,6 +6141,7 @@
             <button type="button" data-module="vehicles">Vehiculos</button>
             <button type="button" data-module="intakes" class="">Ingreso</button>
             <button type="button" data-module="notes">Notas</button>
+            <button type="button" data-module="labor">Precios</button>
           </nav>
           <div class="topbar-actions">
             <button class="camera-button" type="button" id="refreshBtn" aria-label="Actualizar" title="Actualizar">↻</button>
@@ -5958,6 +6152,7 @@
             <button class="primary hidden" type="button" id="newCommercialAccountBtn">Nueva cuenta</button>
             <button class="primary hidden" type="button" id="newSaleBtn">Nueva venta</button>
             <button class="primary hidden" type="button" id="newNoteBtn">Nueva nota</button>
+          <button class="primary hidden" type="button" id="newLaborBtn">Nuevo trabajo</button>
             <button class="primary hidden" type="button" id="newIntakeBtn">Nuevo ingreso</button>
             <button class="primary hidden" type="button" id="newVehicleBtn">Nuevo vehiculo</button>
           </div>
@@ -6157,6 +6352,46 @@
 
           <div id="pendingCollectionsStatusMessage" class="status-message"></div>
           <section id="pendingCollectionsList" class="commercial-list pending-list" aria-live="polite"></section>
+        </section>
+
+        <section id="laborModule" class="module-panel hidden">
+          <div class="hora-barra">
+            <div class="hora-campo">
+              <label for="valorHoraInput">Valor hora taller</label>
+              <div class="hora-entrada">
+                <span>$</span>
+                <input id="valorHoraInput" type="number" min="0" step="1000" inputmode="numeric">
+                <small>+ IVA</small>
+              </div>
+              <p class="hora-pie"><span id="valorHoraStamp"></span></p>
+            </div>
+            <button class="primary hidden" type="button" id="guardarValorHoraBtn">Aplicar aumento</button>
+            <div class="segmented hora-iva" role="group" aria-label="Como mostrar el precio">
+              <button type="button" data-labor-iva="neto" class="active">Sin IVA</button>
+              <button type="button" data-labor-iva="final">Con IVA</button>
+            </div>
+          </div>
+
+          <div class="module-topline">
+            <section class="notes-head" aria-label="Resumen de precios">
+              <div>
+                <h2>MANO DE OBRA</h2>
+              </div>
+              <strong id="laborCount">0 trabajos</strong>
+            </section>
+
+            <nav class="filters" aria-label="Categoria de vehiculo">
+              <div class="segmented" role="group" aria-label="Categoria">
+                <button type="button" data-labor-cat="horasLiv" class="active">Livianos</button>
+                <button type="button" data-labor-cat="horasMed">Medianos</button>
+                <button type="button" data-labor-cat="horasPes">Pesados</button>
+              </div>
+              <input id="laborSearchInput" type="search" placeholder="Buscar trabajo">
+            </nav>
+          </div>
+
+          <div id="laborStatusMessage" class="status-message"></div>
+          <section id="laborGrid" class="labor-grid" aria-live="polite"></section>
         </section>
 
         <section id="notesModule" class="module-panel hidden">
@@ -6769,6 +7004,49 @@
       </form>
     </dialog>
 
+    <dialog id="laborDialog">
+      <form method="dialog" id="laborForm" class="dialog-card">
+        <div class="dialog-head">
+          <h2 id="laborDialogTitle">Nuevo trabajo</h2>
+          <button type="button" class="icon-button" data-close-dialog>Cerrar</button>
+        </div>
+        <label>
+          Trabajo
+          <input name="trabajo" type="text" autocomplete="off" placeholder="Ej: Kit de distribucion">
+        </label>
+        <label>
+          Rubro
+          <input name="rubro" type="text" list="laborRubros" autocomplete="off" placeholder="Ej: Motor">
+        </label>
+        <datalist id="laborRubros"></datalist>
+        <div class="labor-horas">
+          <label>
+            Livianos
+            <input name="horasLiv" type="number" min="0" step="0.1" inputmode="decimal" placeholder="hs">
+          </label>
+          <label>
+            Medianos
+            <input name="horasMed" type="number" min="0" step="0.1" inputmode="decimal" placeholder="hs">
+          </label>
+          <label>
+            Pesados
+            <input name="horasPes" type="number" min="0" step="0.1" inputmode="decimal" placeholder="hs">
+          </label>
+        </div>
+        <p class="muted">Dejar vacio lo que no se haga en esa categoria.</p>
+        <label>
+          Aclaracion
+          <input name="nota" type="text" placeholder="Ej: sin bomba de agua">
+        </label>
+        <p id="laborFormError" class="dialog-error hidden" role="alert"></p>
+        <div class="dialog-actions">
+          <button type="button" class="ghost" id="laborDeleteBtn">Eliminar</button>
+          <button type="button" class="ghost" data-close-dialog>Cancelar</button>
+          <button type="submit" class="primary">Guardar</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog id="intakeDialog">
       <form method="dialog" id="intakeForm" class="dialog-card intake-dialog">
         <div class="dialog-head">
@@ -6904,6 +7182,14 @@
     payingSaleId: null,
     editingCommercialAccountId: null,
     editingNoteId: null,
+    editingLaborId: null,
+    laborCat: 'horasLiv',
+    laborQuery: '',
+    laborIva: 'neto',
+    // Lo que Pablo esta tecleando en el valor hora. Se separa del guardado para
+    // poder mostrarle la grilla entera recalculada ANTES de que confirme: un
+    // aumento se decide mirando los precios que quedan, no el porcentaje.
+    valorHoraBorrador: null,
     editingIntakeId: null,
     editingVehicleId: null,
     expenseRepairId: null,
@@ -7000,6 +7286,7 @@
     sales: { fn: 'apiGetSales', loaded: 'sales' },
     accounts: { fn: 'apiGetSales', loaded: 'sales' },
     notes: { fn: 'apiGetNotes', loaded: 'notes' },
+    labor: { fn: 'apiGetLabor', loaded: 'labor' },
     intakes: { fn: 'apiGetIntakes', loaded: 'intakes' },
     vehicles: { fn: 'apiGetVehicles', loaded: 'vehicles' }
   };
@@ -7294,6 +7581,39 @@
     if (newInternalCostBtn) newInternalCostBtn.addEventListener('click', () => openInternalCostDialog());
     document.getElementById('newSaleBtn').addEventListener('click', () => openSaleDialog());
     document.getElementById('newNoteBtn').addEventListener('click', () => openNoteDialog());
+    document.getElementById('newLaborBtn').addEventListener('click', () => openLaborDialog());
+    document.getElementById('laborForm').addEventListener('submit', submitLabor);
+    document.getElementById('laborDeleteBtn').addEventListener('click', () => {
+      const id = state.editingLaborId;
+      document.getElementById('laborDialog').close();
+      if (id) deleteLaborPrice(id);
+    });
+    document.getElementById('guardarValorHoraBtn').addEventListener('click', guardarValorHora);
+    document.getElementById('valorHoraInput').addEventListener('input', event => {
+      const valor = Number(event.target.value);
+      state.valorHoraBorrador = event.target.value === '' ? null : valor;
+      render();
+    });
+    document.getElementById('laborSearchInput').addEventListener('input', event => {
+      state.laborQuery = event.target.value.toLowerCase();
+      render();
+    });
+    document.querySelectorAll('[data-labor-cat]').forEach(boton => {
+      boton.addEventListener('click', () => {
+        state.laborCat = boton.dataset.laborCat;
+        document.querySelectorAll('[data-labor-cat]').forEach(otro => otro.classList.remove('active'));
+        boton.classList.add('active');
+        render();
+      });
+    });
+    document.querySelectorAll('[data-labor-iva]').forEach(boton => {
+      boton.addEventListener('click', () => {
+        state.laborIva = boton.dataset.laborIva;
+        document.querySelectorAll('[data-labor-iva]').forEach(otro => otro.classList.remove('active'));
+        boton.classList.add('active');
+        render();
+      });
+    });
     document.getElementById('newIntakeBtn').addEventListener('click', () => openIntakeDialog());
     document.getElementById('refreshBtn').addEventListener('click', loadCurrentModule);
     const costHistoryToggle = document.getElementById('costHistoryToggle');
@@ -7531,6 +7851,7 @@
   function ensureCurrentModuleLoaded() {
     if ((state.module === 'sales' || state.module === 'accounts') && !state.loaded.sales) loadSales();
     if (state.module === 'notes' && !state.loaded.notes) loadNotes();
+    if (state.module === 'labor' && !state.loaded.labor) loadLabor();
     if (state.module === 'intakes' && !state.loaded.intakes) loadIntakes();
     if (state.module === 'vehicles' && !state.loaded.vehicles) loadVehicles();
   }
@@ -7540,6 +7861,15 @@
     callServer('apiBootstrap').then(data => {
       state.loaded.costs = true;
       updateData(data, isRefresh ? 'Taller actualizado.' : null);
+    }).catch(showError);
+  }
+
+  function loadLabor(isRefresh) {
+    showLaborStatus('Cargando precios...', true);
+    callServer('apiGetLabor').then(data => {
+      state.loaded.labor = true;
+      state.valorHoraBorrador = null;
+      updateData(data, isRefresh ? 'Precios actualizados.' : null);
     }).catch(showError);
   }
 
@@ -8056,6 +8386,7 @@
     renderSales();
     renderAccounts();
     renderNotes();
+    renderLabor();
     renderIntakes();
     renderVehicles();
   }
@@ -8068,6 +8399,7 @@
     const isSales = state.module === 'sales';
     const isAccounts = state.module === 'accounts';
     const isNotes = state.module === 'notes';
+    const isLabor = state.module === 'labor';
     const isIntakes = state.module === 'intakes';
     document.body.classList.toggle('intake-only', INTAKE_ONLY);
     document.querySelectorAll('[data-module]').forEach(item => {
@@ -8088,6 +8420,8 @@
     document.getElementById('newCommercialAccountBtn').classList.toggle('hidden', !isAccounts);
     document.getElementById('newSaleBtn').classList.toggle('hidden', !isSales);
     document.getElementById('newNoteBtn').classList.toggle('hidden', !isNotes);
+    document.getElementById('laborModule').classList.toggle('hidden', !isLabor);
+    document.getElementById('newLaborBtn').classList.toggle('hidden', !isLabor);
     document.getElementById('newIntakeBtn').classList.toggle('hidden', !isIntakes);
     if (isIntakes) document.getElementById('newIntakeBtn').textContent = 'Nuevo ingreso';
     document.body.classList.toggle('notes-view', isNotes);
@@ -8183,6 +8517,105 @@
         </div>
       </article>
     `;
+  }
+
+  // El precio de un renglon: horas x valor hora, redondeado a los mil. Un
+  // machete con "$ 227.500" obliga a hacer una cuenta mental en el momento de
+  // cobrar; "$ 228.000" se lee de un vistazo, que es para lo que existe esto.
+  function precioTrabajo(horas, valorHora) {
+    if (horas === null || horas === undefined) return null;
+    const bruto = horas * valorHora * (state.laborIva === 'final' ? 1 + IVA_RATE_CLIENTE : 1);
+    return Math.round(bruto / 1000) * 1000;
+  }
+
+  const IVA_RATE_CLIENTE = 0.21;
+
+  function valorHoraVigente() {
+    if (state.valorHoraBorrador !== null && !isNaN(state.valorHoraBorrador)) return state.valorHoraBorrador;
+    return Number(state.data.valorHora) || 0;
+  }
+
+  function renderLabor() {
+    if (!state.loaded.labor) {
+      showLaborStatus('Cargando precios...', true);
+      return;
+    }
+
+    const valorHora = valorHoraVigente();
+    const guardado = Number(state.data.valorHora) || 0;
+    const enBorrador = state.valorHoraBorrador !== null && state.valorHoraBorrador !== guardado;
+
+    const campo = document.getElementById('valorHoraInput');
+    if (document.activeElement !== campo) campo.value = guardado || '';
+    document.getElementById('guardarValorHoraBtn').classList.toggle('hidden', !enBorrador);
+
+    const sello = document.getElementById('valorHoraStamp');
+    if (enBorrador) {
+      const dif = guardado ? ((state.valorHoraBorrador - guardado) / guardado) * 100 : 0;
+      sello.textContent = `Vista previa: ${dif >= 0 ? '+' : ''}${numAr1.format(dif)}% sobre ${money.format(guardado)}`;
+      sello.classList.add('en-borrador');
+    } else {
+      const dias = diasDesde(state.data.valorHoraAt);
+      sello.textContent = dias === null ? '' : (dias === 0 ? 'Actualizado hoy' : `Actualizado hace ${dias} dias`);
+      sello.classList.remove('en-borrador');
+    }
+
+    const lista = getFilteredLabor();
+    document.getElementById('laborCount').textContent =
+      `${lista.length} ${lista.length === 1 ? 'trabajo' : 'trabajos'}`;
+
+    // Los rubros se arman a partir de lo que hay, no de una lista fija: si
+    // Pablo inventa un rubro nuevo al cargar un trabajo, aparece solo.
+    const rubros = [];
+    lista.forEach(item => {
+      if (rubros.indexOf(item.rubro) === -1) rubros.push(item.rubro);
+    });
+
+    document.getElementById('laborRubros').innerHTML = rubros
+      .map(r => `<option value="${escapeHtml(r)}"></option>`).join('');
+
+    const grid = document.getElementById('laborGrid');
+    grid.innerHTML = rubros.map(rubro => `
+      <section class="labor-rubro">
+        <h3>${escapeHtml(rubro)}</h3>
+        ${lista.filter(item => item.rubro === rubro).map(item => {
+          const horas = item[state.laborCat];
+          const precio = precioTrabajo(horas, valorHora);
+          return `
+            <article class="labor-fila" data-labor-id="${item.id}" role="button" tabindex="0">
+              <div class="labor-nombre">
+                <strong>${escapeHtml(item.trabajo)}</strong>
+                ${item.nota ? `<span>${escapeHtml(item.nota)}</span>` : ''}
+              </div>
+              <span class="labor-horas-val">${horas === null ? '—' : numAr1.format(horas) + ' h'}</span>
+              <strong class="labor-precio">${precio === null ? '' : money.format(precio)}</strong>
+            </article>
+          `;
+        }).join('')}
+      </section>
+    `).join('');
+
+    grid.querySelectorAll('[data-labor-id]').forEach(fila => {
+      const abrir = () => openLaborDialog(findLaborPrice(fila.dataset.laborId));
+      fila.addEventListener('click', abrir);
+      fila.addEventListener('keydown', evento => {
+        if (evento.key === 'Enter' || evento.key === ' ') { evento.preventDefault(); abrir(); }
+      });
+    });
+
+    showLaborStatus(lista.length ? '' : 'No hay trabajos para mostrar.', !lista.length);
+  }
+
+  function getFilteredLabor() {
+    return (state.data.laborPrices || []).filter(item => {
+      if (item.status === 'archived') return false;
+      const heno = [item.trabajo, item.rubro, item.nota].join(' ').toLowerCase();
+      return heno.includes(state.laborQuery);
+    });
+  }
+
+  function findLaborPrice(id) {
+    return (state.data.laborPrices || []).find(item => item.id === id) || null;
   }
 
   function renderNotes() {
@@ -10739,6 +11172,69 @@
     form.elements.costTotal.value = option.costTotal || 0;
   }
 
+  function openLaborDialog(item) {
+    const dialog = document.getElementById('laborDialog');
+    const form = document.getElementById('laborForm');
+    form.reset();
+    showLaborFormError('');
+    state.editingLaborId = item ? item.id : null;
+    document.getElementById('laborDialogTitle').textContent = item ? 'Editar trabajo' : 'Nuevo trabajo';
+    document.getElementById('laborDeleteBtn').classList.toggle('hidden', !item);
+    form.elements.trabajo.value = item ? item.trabajo : '';
+    form.elements.rubro.value = item ? item.rubro : '';
+    form.elements.horasLiv.value = item && item.horasLiv !== null ? item.horasLiv : '';
+    form.elements.horasMed.value = item && item.horasMed !== null ? item.horasMed : '';
+    form.elements.horasPes.value = item && item.horasPes !== null ? item.horasPes : '';
+    form.elements.nota.value = item ? item.nota : '';
+    dialog.showModal();
+  }
+
+  function submitLabor(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const payload = Object.fromEntries(new FormData(form).entries());
+    payload.trabajo = String(payload.trabajo || '').trim();
+
+    if (!payload.trabajo) {
+      showLaborFormError('Ponele un nombre al trabajo.');
+      form.elements.trabajo.focus();
+      return;
+    }
+    // Un trabajo sin horas en ninguna categoria no dice nada: seria un renglon
+    // que ocupa lugar en el machete y no responde la unica pregunta que le hacen.
+    if (!payload.horasLiv && !payload.horasMed && !payload.horasPes) {
+      showLaborFormError('Cargale las horas al menos en una categoria.');
+      form.elements.horasLiv.focus();
+      return;
+    }
+    showLaborFormError('');
+
+    const request = state.editingLaborId
+      ? callServer('apiUpdateLaborPrice', state.editingLaborId, payload)
+      : callServer('apiCreateLaborPrice', payload);
+
+    form.closest('dialog').close();
+    showLaborStatus('Guardando...', true);
+    request.then(data => updateData(data, state.editingLaborId ? 'Trabajo actualizado.' : 'Trabajo agregado.'))
+      .catch(showError);
+  }
+
+  function deleteLaborPrice(id) {
+    if (!confirm('Eliminar este trabajo del machete?')) return;
+    showLaborStatus('Eliminando...', true);
+    callServer('apiDeleteLaborPrice', id).then(data => updateData(data, 'Trabajo eliminado.')).catch(showError);
+  }
+
+  function guardarValorHora() {
+    const valor = state.valorHoraBorrador;
+    if (valor === null || isNaN(valor) || valor <= 0) return;
+    showLaborStatus('Aplicando el valor hora...', true);
+    callServer('apiSetValorHora', valor).then(data => {
+      state.valorHoraBorrador = null;
+      updateData(data, 'Valor hora actualizado.');
+    }).catch(showError);
+  }
+
   function openNoteDialog(note) {
     const dialog = document.getElementById('noteDialog');
     const form = document.getElementById('noteForm');
@@ -10820,6 +11316,19 @@
     const element = document.getElementById('statusMessage');
     element.textContent = message || '';
     element.classList.toggle('visible', Boolean(forceVisible || message));
+  }
+
+  function showLaborStatus(message, forceVisible) {
+    const element = document.getElementById('laborStatusMessage');
+    element.textContent = message || '';
+    element.classList.toggle('visible', Boolean(forceVisible || message));
+  }
+
+  function showLaborFormError(message) {
+    const element = document.getElementById('laborFormError');
+    if (!element) return;
+    element.textContent = message || '';
+    element.classList.toggle('hidden', !message);
   }
 
   function showNoteFormError(message) {
