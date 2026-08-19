@@ -6077,6 +6077,152 @@
     grid-column: 2;
     grid-row: 1;
   }
+
+  /* ---- Sueldos ---- */
+  .staff-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .staff-card {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    cursor: pointer;
+  }
+
+  .staff-card.elegido,
+  .staff-card:hover,
+  .staff-card:focus-visible {
+    border-color: var(--accent);
+    outline: none;
+  }
+
+  .staff-nombre {
+    font-family: var(--display);
+    font-size: 1.02rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .staff-saldo {
+    font-family: var(--display);
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .staff-pie {
+    font-size: 0.76rem;
+    color: var(--muted);
+  }
+
+  .staff-detalle {
+    padding: 14px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .staff-detalle-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .staff-detalle-head h3 {
+    margin: 0;
+    font-family: var(--display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .staff-saldo-grande {
+    font-family: var(--display);
+    font-size: 2.1rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .staff-movs {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .staff-mov {
+    display: grid;
+    grid-template-columns: 3.4rem minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(41, 57, 76, 0.6);
+  }
+
+  .mov-fecha {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .mov-concepto {
+    min-width: 0;
+    font-size: 0.94rem;
+  }
+
+  .mov-concepto em {
+    margin-left: 6px;
+    font-style: normal;
+    font-size: 0.84rem;
+    color: var(--muted);
+  }
+
+  /* Lo que vino de la planilla vieja se marca: si un numero no cierra, hay que
+     saber de un vistazo si lo cargo Pablo o lo trajo la importacion. */
+  .mov-viejo {
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(134, 151, 171, 0.18);
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--muted);
+  }
+
+  .mov-monto {
+    font-family: var(--mono);
+    font-size: 0.96rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .staff-mov.tipo-apertura {
+    border-bottom-color: var(--accent);
+  }
+
+  .staff-mov.tipo-apertura .mov-concepto,
+  .staff-mov.tipo-apertura .mov-monto {
+    color: var(--accent-strong);
+    font-weight: 700;
+  }
+
+  .staff-mov.tipo-suma .mov-monto {
+    color: var(--cobrado);
+  }
 </style>
   </head>
   <body>
@@ -6142,6 +6288,7 @@
             <button type="button" data-module="intakes" class="">Ingreso</button>
             <button type="button" data-module="notes">Notas</button>
             <button type="button" data-module="labor">Precios</button>
+            <button type="button" data-module="staff">Empleados</button>
           </nav>
           <div class="topbar-actions">
             <button class="camera-button" type="button" id="refreshBtn" aria-label="Actualizar" title="Actualizar">↻</button>
@@ -6153,6 +6300,7 @@
             <button class="primary hidden" type="button" id="newSaleBtn">Nueva venta</button>
             <button class="primary hidden" type="button" id="newNoteBtn">Nueva nota</button>
           <button class="primary hidden" type="button" id="newLaborBtn">Nuevo trabajo</button>
+          <button class="primary hidden" type="button" id="newStaffMoveBtn">Cargar movimiento</button>
             <button class="primary hidden" type="button" id="newIntakeBtn">Nuevo ingreso</button>
             <button class="primary hidden" type="button" id="newVehicleBtn">Nuevo vehiculo</button>
           </div>
@@ -6352,6 +6500,32 @@
 
           <div id="pendingCollectionsStatusMessage" class="status-message"></div>
           <section id="pendingCollectionsList" class="commercial-list pending-list" aria-live="polite"></section>
+        </section>
+
+        <section id="staffModule" class="module-panel hidden">
+          <div class="module-topline">
+            <section class="notes-head" aria-label="Resumen de sueldos">
+              <div>
+                <h2>SUELDOS</h2>
+              </div>
+              <strong id="staffTotal">$ 0</strong>
+            </section>
+          </div>
+
+          <section id="staffCards" class="staff-cards" aria-live="polite"></section>
+
+          <section id="staffDetalle" class="staff-detalle hidden">
+            <div class="staff-detalle-head">
+              <div>
+                <h3 id="staffNombre">—</h3>
+                <p class="muted" id="staffSub"></p>
+              </div>
+              <strong id="staffSaldo" class="staff-saldo-grande">$ 0</strong>
+            </div>
+            <ol id="staffMovs" class="staff-movs"></ol>
+          </section>
+
+          <div id="staffStatusMessage" class="status-message"></div>
         </section>
 
         <section id="laborModule" class="module-panel hidden">
@@ -7004,6 +7178,48 @@
       </form>
     </dialog>
 
+    <dialog id="staffDialog">
+      <form method="dialog" id="staffForm" class="dialog-card">
+        <div class="dialog-head">
+          <h2 id="staffDialogTitle">Cargar movimiento</h2>
+          <button type="button" class="icon-button" data-close-dialog>Cerrar</button>
+        </div>
+        <label>
+          Concepto
+          <select name="concepto" id="staffConcepto">
+            <option value="VALE|resta" selected>Vale</option>
+            <option value="TRANSFERENCIA|resta">Transferencia</option>
+            <option value="EFECTIVO|resta">Efectivo</option>
+            <option value="FALTA|resta">Falta</option>
+            <option value="MEDIA FALTA|resta">Media falta</option>
+            <option value="SUSPENSION|resta">Suspension</option>
+            <option value="REPUESTOS|resta">Repuestos</option>
+            <option value="CUOTA|resta">Cuota</option>
+            <option value="HORA EXTRA|suma">Hora extra</option>
+            <option value="AGUINALDO|suma">Aguinaldo</option>
+            <option value="ABRIR QUINCENA|apertura">Abrir quincena</option>
+          </select>
+        </label>
+        <label>
+          Importe
+          <input name="monto" type="number" min="0" step="1000" inputmode="numeric" placeholder="0">
+        </label>
+        <label>
+          Fecha
+          <input name="fecha" type="date">
+        </label>
+        <label>
+          Nota
+          <input name="nota" type="text" placeholder="Opcional">
+        </label>
+        <p id="staffFormError" class="dialog-error hidden" role="alert"></p>
+        <div class="dialog-actions">
+          <button type="button" class="ghost" data-close-dialog>Cancelar</button>
+          <button type="submit" class="primary">Guardar</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog id="laborDialog">
       <form method="dialog" id="laborForm" class="dialog-card">
         <div class="dialog-head">
@@ -7186,6 +7402,7 @@
     laborCat: 'horasLiv',
     laborQuery: '',
     laborIva: 'neto',
+    empleadoElegido: null,
     // Lo que Pablo esta tecleando en el valor hora. Se separa del guardado para
     // poder mostrarle la grilla entera recalculada ANTES de que confirme: un
     // aumento se decide mirando los precios que quedan, no el porcentaje.
@@ -7287,6 +7504,7 @@
     accounts: { fn: 'apiGetSales', loaded: 'sales' },
     notes: { fn: 'apiGetNotes', loaded: 'notes' },
     labor: { fn: 'apiGetLabor', loaded: 'labor' },
+    staff: { fn: 'apiGetEmpleados', loaded: 'staff' },
     intakes: { fn: 'apiGetIntakes', loaded: 'intakes' },
     vehicles: { fn: 'apiGetVehicles', loaded: 'vehicles' }
   };
@@ -7582,6 +7800,8 @@
     document.getElementById('newSaleBtn').addEventListener('click', () => openSaleDialog());
     document.getElementById('newNoteBtn').addEventListener('click', () => openNoteDialog());
     document.getElementById('newLaborBtn').addEventListener('click', () => openLaborDialog());
+    document.getElementById('newStaffMoveBtn').addEventListener('click', openStaffDialog);
+    document.getElementById('staffForm').addEventListener('submit', submitStaffMove);
     document.getElementById('laborForm').addEventListener('submit', submitLabor);
     document.getElementById('laborDeleteBtn').addEventListener('click', () => {
       const id = state.editingLaborId;
@@ -7852,6 +8072,7 @@
     if ((state.module === 'sales' || state.module === 'accounts') && !state.loaded.sales) loadSales();
     if (state.module === 'notes' && !state.loaded.notes) loadNotes();
     if (state.module === 'labor' && !state.loaded.labor) loadLabor();
+    if (state.module === 'staff' && !state.loaded.staff) loadStaff();
     if (state.module === 'intakes' && !state.loaded.intakes) loadIntakes();
     if (state.module === 'vehicles' && !state.loaded.vehicles) loadVehicles();
   }
@@ -7861,6 +8082,14 @@
     callServer('apiBootstrap').then(data => {
       state.loaded.costs = true;
       updateData(data, isRefresh ? 'Taller actualizado.' : null);
+    }).catch(showError);
+  }
+
+  function loadStaff(isRefresh) {
+    showStaffStatus('Cargando sueldos...', true);
+    callServer('apiGetEmpleados').then(data => {
+      state.loaded.staff = true;
+      updateData(data, isRefresh ? 'Sueldos actualizados.' : null);
     }).catch(showError);
   }
 
@@ -8387,6 +8616,7 @@
     renderAccounts();
     renderNotes();
     renderLabor();
+    renderStaff();
     renderIntakes();
     renderVehicles();
   }
@@ -8400,6 +8630,7 @@
     const isAccounts = state.module === 'accounts';
     const isNotes = state.module === 'notes';
     const isLabor = state.module === 'labor';
+    const isStaff = state.module === 'staff';
     const isIntakes = state.module === 'intakes';
     document.body.classList.toggle('intake-only', INTAKE_ONLY);
     document.querySelectorAll('[data-module]').forEach(item => {
@@ -8422,6 +8653,8 @@
     document.getElementById('newNoteBtn').classList.toggle('hidden', !isNotes);
     document.getElementById('laborModule').classList.toggle('hidden', !isLabor);
     document.getElementById('newLaborBtn').classList.toggle('hidden', !isLabor);
+    document.getElementById('staffModule').classList.toggle('hidden', !isStaff);
+    document.getElementById('newStaffMoveBtn').classList.toggle('hidden', !isStaff || !state.empleadoElegido);
     document.getElementById('newIntakeBtn').classList.toggle('hidden', !isIntakes);
     if (isIntakes) document.getElementById('newIntakeBtn').textContent = 'Nuevo ingreso';
     document.body.classList.toggle('notes-view', isNotes);
@@ -8533,6 +8766,102 @@
   function valorHoraVigente() {
     if (state.valorHoraBorrador !== null && !isNaN(state.valorHoraBorrador)) return state.valorHoraBorrador;
     return Number(state.data.valorHora) || 0;
+  }
+
+  function renderStaff() {
+    if (!state.loaded.staff) return;
+
+    const empleados = (state.data.empleados || []).filter(e => e.status !== 'archived');
+    document.getElementById('staffTotal').textContent =
+      `${money.format(state.data.empleadosTotal || 0)} de la quincena`;
+
+    const cards = document.getElementById('staffCards');
+    cards.innerHTML = empleados.map(e => `
+      <article class="staff-card${state.empleadoElegido === e.id ? ' elegido' : ''}" data-empleado="${e.id}" role="button" tabindex="0">
+        <span class="staff-nombre">${escapeHtml(e.nombre)}</span>
+        <strong class="staff-saldo">${money.format(e.saldo)}</strong>
+        <span class="staff-pie">${e.saldo > 0 ? 'le debes' : 'al dia'}</span>
+      </article>
+    `).join('');
+
+    cards.querySelectorAll('[data-empleado]').forEach(card => {
+      const elegir = () => {
+        state.empleadoElegido = state.empleadoElegido === card.dataset.empleado ? null : card.dataset.empleado;
+        render();
+      };
+      card.addEventListener('click', elegir);
+      card.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); elegir(); }
+      });
+    });
+
+    const detalle = document.getElementById('staffDetalle');
+    const elegido = empleados.find(e => e.id === state.empleadoElegido) || null;
+    detalle.classList.toggle('hidden', !elegido);
+    if (!elegido) {
+      showStaffStatus(empleados.length ? 'Toca a alguien para ver su cuenta.' : 'No hay empleados cargados.', true);
+      return;
+    }
+    showStaffStatus('');
+
+    document.getElementById('staffNombre').textContent = elegido.nombre;
+    document.getElementById('staffSub').textContent =
+      elegido.sueldoMensual ? `Sueldo ${money.format(elegido.sueldoMensual)} por mes` : '';
+    document.getElementById('staffSaldo').textContent = money.format(elegido.saldo);
+
+    // Del mas nuevo al mas viejo: lo que interesa es lo ultimo que paso.
+    const movs = elegido.movimientos.slice().reverse();
+    document.getElementById('staffMovs').innerHTML = movs.map(m => `
+      <li class="staff-mov tipo-${escapeHtml(m.tipo)}">
+        <span class="mov-fecha">${escapeHtml(formatFechaCorta(m.fecha))}</span>
+        <span class="mov-concepto">
+          ${escapeHtml(m.concepto)}
+          ${m.nota ? `<em>${escapeHtml(m.nota)}</em>` : ''}
+          ${m.origen === 'importado' ? '<b class="mov-viejo">planilla</b>' : ''}
+        </span>
+        <strong class="mov-monto">${m.tipo === 'resta' ? '−' : '+'} ${money.format(m.monto)}</strong>
+      </li>
+    `).join('');
+  }
+
+  function formatFechaCorta(iso) {
+    const partes = String(iso || '').split('-');
+    return partes.length === 3 ? `${partes[2]}/${partes[1]}` : (iso || '');
+  }
+
+  function submitStaffMove(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const datos = Object.fromEntries(new FormData(form).entries());
+    const [concepto, tipo] = String(datos.concepto || 'VALE|resta').split('|');
+
+    if (!(Number(datos.monto) > 0)) {
+      showStaffFormError('Poné un importe mayor que cero.');
+      form.elements.monto.focus();
+      return;
+    }
+    showStaffFormError('');
+
+    const payload = { concepto: concepto, tipo: tipo, monto: Number(datos.monto), fecha: datos.fecha, nota: datos.nota };
+    form.closest('dialog').close();
+    showStaffStatus('Guardando...', true);
+    callServer('apiAddMovimientoEmpleado', state.empleadoElegido, payload)
+      .then(data => updateData(data, 'Movimiento cargado.'))
+      .catch(showError);
+  }
+
+  function openStaffDialog() {
+    if (!state.empleadoElegido) return;
+    const form = document.getElementById('staffForm');
+    form.reset();
+    showStaffFormError('');
+    const hoy = new Date();
+    form.elements.fecha.value = [
+      hoy.getFullYear(),
+      String(hoy.getMonth() + 1).padStart(2, '0'),
+      String(hoy.getDate()).padStart(2, '0')
+    ].join('-');
+    document.getElementById('staffDialog').showModal();
   }
 
   function renderLabor() {
@@ -11316,6 +11645,19 @@
     const element = document.getElementById('statusMessage');
     element.textContent = message || '';
     element.classList.toggle('visible', Boolean(forceVisible || message));
+  }
+
+  function showStaffStatus(message, forceVisible) {
+    const element = document.getElementById('staffStatusMessage');
+    element.textContent = message || '';
+    element.classList.toggle('visible', Boolean(forceVisible || message));
+  }
+
+  function showStaffFormError(message) {
+    const element = document.getElementById('staffFormError');
+    if (!element) return;
+    element.textContent = message || '';
+    element.classList.toggle('hidden', !message);
   }
 
   function showLaborStatus(message, forceVisible) {
