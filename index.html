@@ -8891,7 +8891,7 @@
         </span>
         <span class="mov-entrada col-num">${m.entrada ? money.format(m.entrada) : ''}</span>
         <span class="mov-salida col-num">${m.salida ? money.format(m.salida) : ''}</span>
-        <strong class="mov-saldo col-num">${money.format(m.saldo)}</strong>
+        <strong class="mov-saldo col-num">${m.saldo === null ? '' : money.format(m.saldo)}</strong>
       </li>
     `).join('');
   }
