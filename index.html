@@ -678,19 +678,6 @@
     white-space: nowrap;
   }
 
-  .notes-info-panel {
-    display: grid;
-    grid-template-columns: minmax(360px, 1fr) minmax(540px, 1.25fr);
-    gap: 12px;
-    margin: 0 0 14px;
-  }
-
-  .notes-hero-panel {
-    min-height: 174px;
-    align-items: stretch;
-    margin-bottom: 14px;
-  }
-
   /* La franja de arriba no se va al bajar por las notas.
      La barra de modulos ya estaba pegada arriba (.topbar es sticky); esto pega
      el panel de clima justo abajo. El "justo abajo" sale de --topbar-alto, que
@@ -721,124 +708,11 @@
     font-size: 0.95rem;
     font-weight: 600;
   }
-
-  .weather-now,
-  .forecast-day,
   .tech-ticker {
     border: 1px solid rgba(96, 165, 250, 0.22);
     border-radius: 8px;
     background: linear-gradient(135deg, rgba(30, 41, 59, 0.96), rgba(15, 23, 42, 0.98));
     box-shadow: var(--shadow);
-  }
-
-  .weather-now {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 134px;
-    grid-template-rows: minmax(96px, auto) auto;
-    gap: 9px;
-    align-items: stretch;
-    min-height: 174px;
-    padding: 14px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .weather-now::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(circle at 18% 18%, rgba(96, 165, 250, 0.16), transparent 32%),
-      linear-gradient(90deg, rgba(74, 163, 255, 0.12), transparent 42%);
-    pointer-events: none;
-  }
-
-  .weather-main,
-  .weather-time-chip,
-  .weather-stats {
-    position: relative;
-    z-index: 1;
-  }
-
-  .weather-main {
-    display: grid;
-    align-content: center;
-    gap: 5px;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .weather-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    max-width: 100%;
-  }
-
-  .panel-eyebrow {
-    display: block;
-    color: var(--muted);
-    font-size: 0.76rem;
-    font-weight: 900;
-    line-height: 1.15;
-    text-transform: uppercase;
-  }
-
-  .weather-time-chip {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    align-content: center;
-    justify-items: start;
-    gap: 8px;
-    min-width: 0;
-    min-height: 0;
-    height: 100%;
-    padding: 11px 12px;
-    border: 1px solid rgba(96, 165, 250, 0.25);
-    border-radius: 8px;
-    background: rgba(15, 23, 42, 0.34);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    white-space: nowrap;
-  }
-
-  .weather-time-chip time {
-    color: var(--muted);
-    font-size: 0.78rem;
-    font-weight: 950;
-    line-height: 1;
-    text-transform: uppercase;
-  }
-
-  .weather-time-chip strong {
-    display: block;
-    margin: 0;
-    color: var(--accent-strong);
-    font-family: var(--mono);
-    font-size: 1.28rem;
-    font-weight: 900;
-    line-height: 1;
-  }
-
-  .weather-reading {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    min-width: 0;
-  }
-
-  .weather-icon-now {
-    display: inline-grid;
-    place-items: center;
-    width: 58px;
-    min-width: 58px;
-    height: 58px;
-    border: 1px solid rgba(96, 165, 250, 0.25);
-    border-radius: 8px;
-    background: rgba(74, 163, 255, 0.10);
-    color: var(--accent);
-    font-size: 1.9rem;
-    line-height: 1;
   }
 
   #weatherTemp {
@@ -848,107 +722,6 @@
     font-size: 2.7rem;
     line-height: 1;
     white-space: nowrap;
-  }
-
-  .weather-now p {
-    margin: 0;
-    color: var(--text);
-    font-size: 1rem;
-    font-weight: 800;
-  }
-
-  .weather-stats {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 7px;
-    align-content: stretch;
-    min-width: 0;
-  }
-
-  .weather-stats span {
-    display: grid;
-    gap: 3px;
-    border: 1px solid rgba(148, 163, 184, 0.22);
-    border-radius: 8px;
-    min-height: 48px;
-    padding: 7px 9px;
-    background: rgba(15, 23, 42, 0.46);
-    min-width: 0;
-  }
-
-  .weather-stats small {
-    color: var(--muted);
-    font-size: 0.62rem;
-    font-weight: 950;
-    line-height: 1;
-    text-transform: uppercase;
-  }
-
-  .weather-stats b {
-    color: var(--text);
-    font-size: 0.88rem;
-    font-weight: 950;
-    line-height: 1.2;
-  }
-
-  .weather-stats em {
-    color: var(--accent-strong);
-    font-size: 0.68rem;
-    font-style: normal;
-    font-weight: 900;
-    line-height: 1;
-   }
-
-  .weather-forecast {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 8px;
-  }
-
-  .forecast-day {
-    display: grid;
-    gap: 3px;
-    min-width: 0;
-    align-content: center;
-    min-height: 116px;
-    padding: 10px;
-  }
-
-  .forecast-day strong {
-    color: var(--text);
-    font-size: 0.9rem;
-    font-weight: 950;
-  }
-
-  .forecast-icon {
-    color: var(--accent);
-    font-size: 1.45rem;
-    line-height: 1;
-  }
-
-  .forecast-day span:not(.forecast-icon) {
-    color: var(--muted);
-    font-size: 0.7rem;
-    line-height: 1.15;
-  }
-
-  .forecast-day b {
-    color: var(--text);
-    font-size: 0.96rem;
-  }
-
-  .forecast-day small {
-    color: var(--muted);
-    font-size: 0.64rem;
-    line-height: 1.18;
-  }
-
-  .forecast-day.empty {
-    grid-column: 1 / -1;
-    align-content: center;
-    color: var(--muted);
-    min-height: 74px;
   }
 
   .tech-ticker {
@@ -5549,38 +5322,6 @@
   body.mobile-large .quick-fields,
   body.mobile-large .quick-expenses li {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  body.tablet .notes-info-panel,
-  body.mobile-large .notes-info-panel {
-    grid-template-columns: 1fr;
-  }
-
-  body.mobile-large .weather-now {
-    grid-template-columns: 1fr;
-  }
-
-  body.mobile-large .weather-heading {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  body.mobile-large .weather-time-chip {
-    width: 100%;
-    min-width: 0;
-    justify-content: space-between;
-  }
-
-  body.mobile-large .weather-stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  body.mobile-large .weather-forecast {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  body.mobile-large .forecast-day:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
   }
 
   /* Cabecera compacta global: marca | modulos | acciones. Va al final para
