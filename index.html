@@ -6251,18 +6251,6 @@
     color: var(--muted);
   }
 
-  /* Lo que vino de la planilla vieja se marca: si un numero no cierra, hay que
-     saber de un vistazo si lo cargo Pablo o lo trajo la importacion. */
-  .mov-viejo {
-    margin-left: 6px;
-    padding: 1px 6px;
-    border-radius: 999px;
-    background: rgba(134, 151, 171, 0.18);
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: var(--muted);
-  }
-
   .mov-monto {
     font-family: var(--mono);
     font-size: 0.96rem;
@@ -6325,6 +6313,28 @@
     font-size: 1.24rem;
     font-weight: 700;
     text-align: right;
+  }
+
+  /* Cada movimiento se toca para corregirlo o borrarlo. */
+  .staff-mov[data-mov] {
+    cursor: pointer;
+  }
+
+  .staff-mov[data-mov]:hover,
+  .staff-mov[data-mov]:focus-visible {
+    background: var(--surface-soft);
+    outline: none;
+  }
+
+  .staff-mov.tipo-nota .mov-concepto {
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .staff-editar {
+    margin-top: 6px;
+    padding: 3px 10px;
+    font-size: 0.78rem;
   }
 </style>
   </head>
@@ -6403,6 +6413,7 @@
             <button class="primary hidden" type="button" id="newSaleBtn">Nueva venta</button>
             <button class="primary hidden" type="button" id="newNoteBtn">Nueva nota</button>
           <button class="primary hidden" type="button" id="newLaborBtn">Nuevo trabajo</button>
+          <button class="primary hidden" type="button" id="nuevoEmpleadoBtn">Nuevo empleado</button>
           <button class="primary hidden" type="button" id="cargarQuincenaBtn">Cargar quincena</button>
           <button class="primary hidden" type="button" id="newStaffMoveBtn">Cargar movimiento</button>
             <button class="primary hidden" type="button" id="newIntakeBtn">Nuevo ingreso</button>
@@ -6623,6 +6634,7 @@
               <div>
                 <h3 id="staffNombre">—</h3>
                 <p class="muted" id="staffSub"></p>
+                <button type="button" class="ghost staff-editar" id="editarEmpleadoBtn">Editar empleado</button>
               </div>
               <strong id="staffSaldo" class="staff-saldo-grande">$ 0</strong>
             </div>
@@ -7315,20 +7327,26 @@
         </div>
         <label>
           Concepto
-          <select name="concepto" id="staffConcepto">
-            <option value="VALE|resta" selected>Vale</option>
-            <option value="TRANSFERENCIA|resta">Transferencia</option>
-            <option value="EFECTIVO|resta">Efectivo</option>
-            <option value="FALTA|resta">Falta</option>
-            <option value="MEDIA FALTA|resta">Media falta</option>
-            <option value="SUSPENSION|resta">Suspension</option>
-            <option value="REPUESTOS|resta">Repuestos</option>
-            <option value="CUOTA|resta">Cuota</option>
-            <option value="HORA EXTRA|suma">Hora extra</option>
-            <option value="AGUINALDO|suma">Aguinaldo</option>
-            <option value="ABRIR QUINCENA|apertura">Abrir quincena</option>
-          </select>
+          <input name="concepto" type="text" list="staffConceptos" autocomplete="off" placeholder="Ej: VALE">
         </label>
+        <datalist id="staffConceptos">
+          <option value="VALE"></option>
+          <option value="TRANSFE"></option>
+          <option value="EFECTIVO"></option>
+          <option value="FALTA"></option>
+          <option value="MEDIA FALTA"></option>
+          <option value="SUSPENSION"></option>
+          <option value="REPUESTOS"></option>
+          <option value="CUOTA MOTO"></option>
+          <option value="HORA EXTRA"></option>
+          <option value="AGUINALDO"></option>
+        </datalist>
+        <div class="segmented" role="group" aria-label="Que hace este movimiento">
+          <button type="button" data-mov-tipo="resta" class="active">Salida</button>
+          <button type="button" data-mov-tipo="suma">Entrada</button>
+          <button type="button" data-mov-tipo="apertura">Quincena</button>
+          <button type="button" data-mov-tipo="nota">Nota</button>
+        </div>
         <label>
           Importe
           <input name="monto" type="number" min="0" step="1000" inputmode="numeric" placeholder="0">
@@ -7342,6 +7360,36 @@
           <input name="nota" type="text" placeholder="Opcional">
         </label>
         <p id="staffFormError" class="dialog-error hidden" role="alert"></p>
+        <div class="dialog-actions">
+          <button type="button" class="ghost hidden" id="staffMovDeleteBtn">Eliminar</button>
+          <button type="button" class="ghost" data-close-dialog>Cancelar</button>
+          <button type="submit" class="primary">Guardar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="empleadoDialog">
+      <form method="dialog" id="empleadoForm" class="dialog-card">
+        <div class="dialog-head">
+          <h2 id="empleadoDialogTitle">Empleado</h2>
+          <button type="button" class="icon-button" data-close-dialog>Cerrar</button>
+        </div>
+        <label>
+          Nombre
+          <input name="nombre" type="text" autocomplete="off">
+        </label>
+        <label>
+          Sueldo mensual
+          <input name="sueldoMensual" type="number" min="0" step="1000" inputmode="numeric">
+        </label>
+        <label>
+          Estado
+          <select name="status">
+            <option value="active">Trabajando</option>
+            <option value="archived">Ya no trabaja</option>
+          </select>
+        </label>
+        <p id="empleadoFormError" class="dialog-error hidden" role="alert"></p>
         <div class="dialog-actions">
           <button type="button" class="ghost" data-close-dialog>Cancelar</button>
           <button type="submit" class="primary">Guardar</button>
@@ -7532,6 +7580,9 @@
     laborQuery: '',
     laborIva: 'neto',
     empleadoElegido: null,
+    editingMovId: null,
+    editingEmpleadoId: null,
+    movTipo: 'resta',
     // Lo que Pablo esta tecleando en el valor hora. Se separa del guardado para
     // poder mostrarle la grilla entera recalculada ANTES de que confirme: un
     // aumento se decide mirando los precios que quedan, no el porcentaje.
@@ -7932,6 +7983,20 @@
     document.getElementById('newStaffMoveBtn').addEventListener('click', openStaffDialog);
     document.getElementById('staffForm').addEventListener('submit', submitStaffMove);
     document.getElementById('cargarQuincenaBtn').addEventListener('click', openQuincenaDialog);
+    document.getElementById('nuevoEmpleadoBtn').addEventListener('click', () => openEmpleadoDialog());
+    document.getElementById('editarEmpleadoBtn').addEventListener('click', () => {
+      const e = (state.data.empleados || []).find(x => x.id === state.empleadoElegido);
+      if (e) openEmpleadoDialog(e);
+    });
+    document.getElementById('empleadoForm').addEventListener('submit', submitEmpleado);
+    document.getElementById('staffMovDeleteBtn').addEventListener('click', () => {
+      const id = state.editingMovId;
+      document.getElementById('staffDialog').close();
+      if (id) deleteMovimientoEmpleado(id);
+    });
+    document.querySelectorAll('[data-mov-tipo]').forEach(boton => {
+      boton.addEventListener('click', () => elegirTipoMov(boton.dataset.movTipo));
+    });
     document.getElementById('quincenaForm').addEventListener('submit', submitQuincena);
     document.getElementById('laborForm').addEventListener('submit', submitLabor);
     document.getElementById('laborDeleteBtn').addEventListener('click', () => {
@@ -8787,6 +8852,7 @@
     document.getElementById('staffModule').classList.toggle('hidden', !isStaff);
     document.getElementById('newStaffMoveBtn').classList.toggle('hidden', !isStaff || !state.empleadoElegido);
     document.getElementById('cargarQuincenaBtn').classList.toggle('hidden', !isStaff);
+    document.getElementById('nuevoEmpleadoBtn').classList.toggle('hidden', !isStaff);
     document.getElementById('newIntakeBtn').classList.toggle('hidden', !isIntakes);
     if (isIntakes) document.getElementById('newIntakeBtn').textContent = 'Nuevo ingreso';
     document.body.classList.toggle('notes-view', isNotes);
@@ -8954,18 +9020,25 @@
         <span class="col-num">Saldo</span>
       </li>
     ` + movs.map(m => `
-      <li class="staff-mov tipo-${escapeHtml(m.tipo)}">
+      <li class="staff-mov tipo-${escapeHtml(m.tipo)}" data-mov="${m.id}" role="button" tabindex="0">
         <span class="mov-fecha">${escapeHtml(formatFechaCorta(m.fecha))}</span>
         <span class="mov-concepto">
           ${escapeHtml(m.concepto)}
           ${m.nota ? `<em>${escapeHtml(m.nota)}</em>` : ''}
-          ${m.origen === 'importado' ? '<b class="mov-viejo">planilla</b>' : ''}
         </span>
         <span class="mov-entrada col-num">${m.entrada ? money.format(m.entrada) : ''}</span>
         <span class="mov-salida col-num">${m.salida ? money.format(m.salida) : ''}</span>
         <strong class="mov-saldo col-num">${m.saldo === null ? '' : money.format(m.saldo)}</strong>
       </li>
     `).join('');
+
+    document.getElementById('staffMovs').querySelectorAll('[data-mov]').forEach(fila => {
+      const abrir = () => openStaffDialog(elegido.movimientos.find(m => m.id === fila.dataset.mov));
+      fila.addEventListener('click', abrir);
+      fila.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrir(); }
+      });
+    });
   }
 
   function formatFechaCorta(iso) {
@@ -8977,21 +9050,84 @@
     event.preventDefault();
     const form = event.currentTarget;
     const datos = Object.fromEntries(new FormData(form).entries());
-    const [concepto, tipo] = String(datos.concepto || 'VALE|resta').split('|');
+    const monto = Number(datos.monto) || 0;
 
-    if (!(Number(datos.monto) > 0)) {
-      showStaffFormError('Poné un importe mayor que cero.');
+    // Una nota es un renglon que dice algo y no mueve plata ("dejo de trabajar
+    // el 3/8"): es el unico caso donde el importe puede ir en cero.
+    if (state.movTipo !== 'nota' && !(monto > 0)) {
+      showStaffFormError('Poné un importe mayor que cero, o marcalo como Nota.');
       form.elements.monto.focus();
       return;
     }
     showStaffFormError('');
 
-    const payload = { concepto: concepto, tipo: tipo, monto: Number(datos.monto), fecha: datos.fecha, nota: datos.nota };
+    const payload = {
+      concepto: String(datos.concepto || '').trim().toUpperCase() || 'MOVIMIENTO',
+      tipo: state.movTipo,
+      monto: state.movTipo === 'nota' ? 0 : monto,
+      fecha: datos.fecha,
+      nota: datos.nota
+    };
+
+    const request = state.editingMovId
+      ? callServer('apiUpdateMovimientoEmpleado', state.editingMovId, payload)
+      : callServer('apiAddMovimientoEmpleado', state.empleadoElegido, payload);
+
     form.closest('dialog').close();
     showStaffStatus('Guardando...', true);
-    callServer('apiAddMovimientoEmpleado', state.empleadoElegido, payload)
-      .then(data => updateData(data, 'Movimiento cargado.'))
+    request.then(data => updateData(data, state.editingMovId ? 'Movimiento corregido.' : 'Movimiento cargado.'))
       .catch(showError);
+  }
+
+  function deleteMovimientoEmpleado(id) {
+    if (!confirm('Eliminar este movimiento de la cuenta?')) return;
+    showStaffStatus('Eliminando...', true);
+    callServer('apiDeleteMovimientoEmpleado', id)
+      .then(data => updateData(data, 'Movimiento eliminado.'))
+      .catch(showError);
+  }
+
+  function elegirTipoMov(tipo) {
+    state.movTipo = tipo;
+    document.querySelectorAll('[data-mov-tipo]').forEach(boton => {
+      boton.classList.toggle('active', boton.dataset.movTipo === tipo);
+    });
+    document.getElementById('staffForm').elements.monto.disabled = (tipo === 'nota');
+  }
+
+  function openEmpleadoDialog(empleado) {
+    const form = document.getElementById('empleadoForm');
+    form.reset();
+    document.getElementById('empleadoFormError').classList.add('hidden');
+    state.editingEmpleadoId = empleado ? empleado.id : null;
+    document.getElementById('empleadoDialogTitle').textContent = empleado ? 'Editar empleado' : 'Nuevo empleado';
+    form.elements.nombre.value = empleado ? empleado.nombre : '';
+    form.elements.sueldoMensual.value = empleado ? empleado.sueldoMensual : '';
+    form.elements.status.value = empleado ? empleado.status : 'active';
+    document.getElementById('empleadoDialog').showModal();
+  }
+
+  function submitEmpleado(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const datos = Object.fromEntries(new FormData(form).entries());
+    const nombre = String(datos.nombre || '').trim();
+    const error = document.getElementById('empleadoFormError');
+    if (!nombre) {
+      error.textContent = 'Ponele el nombre.';
+      error.classList.remove('hidden');
+      return;
+    }
+    error.classList.add('hidden');
+
+    const payload = { nombre: nombre, sueldoMensual: Number(datos.sueldoMensual) || 0, status: datos.status, modalidad: 'quincenal' };
+    const request = state.editingEmpleadoId
+      ? callServer('apiUpdateEmpleado', state.editingEmpleadoId, payload)
+      : callServer('apiCreateEmpleado', payload);
+
+    form.closest('dialog').close();
+    showStaffStatus('Guardando...', true);
+    request.then(data => updateData(data, 'Empleado guardado.')).catch(showError);
   }
 
   // El nombre de la quincena se propone solo con las mismas palabras que usaba
@@ -9087,17 +9223,27 @@
     }).catch(showError);
   }
 
-  function openStaffDialog() {
+  function openStaffDialog(mov) {
     if (!state.empleadoElegido) return;
     const form = document.getElementById('staffForm');
     form.reset();
     showStaffFormError('');
+    state.editingMovId = mov ? mov.id : null;
+
+    document.getElementById('staffDialogTitle').textContent = mov ? 'Corregir movimiento' : 'Cargar movimiento';
+    document.getElementById('staffMovDeleteBtn').classList.toggle('hidden', !mov);
+
     const hoy = new Date();
-    form.elements.fecha.value = [
+    form.elements.concepto.value = mov ? mov.concepto : 'VALE';
+    form.elements.monto.value = mov && mov.monto ? mov.monto : '';
+    form.elements.nota.value = mov ? mov.nota : '';
+    form.elements.fecha.value = mov && mov.fecha ? mov.fecha : [
       hoy.getFullYear(),
       String(hoy.getMonth() + 1).padStart(2, '0'),
       String(hoy.getDate()).padStart(2, '0')
     ].join('-');
+
+    elegirTipoMov(mov ? mov.tipo : 'resta');
     document.getElementById('staffDialog').showModal();
   }
 
