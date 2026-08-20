@@ -7345,6 +7345,7 @@
           <button type="button" data-mov-tipo="resta" class="active">Salida</button>
           <button type="button" data-mov-tipo="suma">Entrada</button>
           <button type="button" data-mov-tipo="apertura">Quincena</button>
+          <button type="button" data-mov-tipo="inicial">Saldo</button>
           <button type="button" data-mov-tipo="nota">Nota</button>
         </div>
         <label>
@@ -9087,12 +9088,16 @@
       .catch(showError);
   }
 
+  // "Quincena" SUMA al saldo; "Saldo" lo PONE en ese numero. Los renglones que
+  // trajo la importacion son del segundo tipo, por eso existe el boton: sin el,
+  // al abrirlos no quedaba ninguno marcado y guardar les cambiaba el sentido.
   function elegirTipoMov(tipo) {
-    state.movTipo = tipo;
+    const conocidos = ['resta', 'suma', 'apertura', 'inicial', 'nota'];
+    state.movTipo = conocidos.indexOf(tipo) === -1 ? 'resta' : tipo;
     document.querySelectorAll('[data-mov-tipo]').forEach(boton => {
-      boton.classList.toggle('active', boton.dataset.movTipo === tipo);
+      boton.classList.toggle('active', boton.dataset.movTipo === state.movTipo);
     });
-    document.getElementById('staffForm').elements.monto.disabled = (tipo === 'nota');
+    document.getElementById('staffForm').elements.monto.disabled = (state.movTipo === 'nota');
   }
 
   function openEmpleadoDialog(empleado) {
