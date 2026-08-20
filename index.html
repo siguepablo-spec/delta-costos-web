@@ -6283,6 +6283,49 @@
   .staff-mov.tipo-suma .mov-monto {
     color: var(--cobrado);
   }
+
+  .quincena-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .quincena-fila {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) 9rem;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-soft);
+    cursor: pointer;
+  }
+
+  .quincena-fila > span {
+    font-family: var(--display);
+    font-size: 1.06rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .quincena-fila input[type="number"] {
+    font-family: var(--mono);
+    text-align: right;
+  }
+
+  .quincena-fila:has(input[type="checkbox"]:not(:checked)) {
+    opacity: 0.45;
+  }
+
+  .quincena-total {
+    margin: 4px 0 0;
+    font-family: var(--display);
+    font-size: 1.24rem;
+    font-weight: 700;
+    text-align: right;
+  }
 </style>
   </head>
   <body>
@@ -6360,6 +6403,7 @@
             <button class="primary hidden" type="button" id="newSaleBtn">Nueva venta</button>
             <button class="primary hidden" type="button" id="newNoteBtn">Nueva nota</button>
           <button class="primary hidden" type="button" id="newLaborBtn">Nuevo trabajo</button>
+          <button class="primary hidden" type="button" id="cargarQuincenaBtn">Cargar quincena</button>
           <button class="primary hidden" type="button" id="newStaffMoveBtn">Cargar movimiento</button>
             <button class="primary hidden" type="button" id="newIntakeBtn">Nuevo ingreso</button>
             <button class="primary hidden" type="button" id="newVehicleBtn">Nuevo vehiculo</button>
@@ -7238,6 +7282,31 @@
       </form>
     </dialog>
 
+    <dialog id="quincenaDialog">
+      <form method="dialog" id="quincenaForm" class="dialog-card">
+        <div class="dialog-head">
+          <h2>Cargar quincena</h2>
+          <button type="button" class="icon-button" data-close-dialog>Cerrar</button>
+        </div>
+        <label>
+          Concepto
+          <input name="concepto" type="text" autocomplete="off">
+        </label>
+        <label>
+          Fecha
+          <input name="fecha" type="date">
+        </label>
+        <p class="muted">Destildá a quien no le corresponda. El importe se puede cambiar.</p>
+        <div id="quincenaLista" class="quincena-lista"></div>
+        <p class="quincena-total" id="quincenaTotal"></p>
+        <p id="quincenaFormError" class="dialog-error hidden" role="alert"></p>
+        <div class="dialog-actions">
+          <button type="button" class="ghost" data-close-dialog>Cancelar</button>
+          <button type="submit" class="primary">Cargar</button>
+        </div>
+      </form>
+    </dialog>
+
     <dialog id="staffDialog">
       <form method="dialog" id="staffForm" class="dialog-card">
         <div class="dialog-head">
@@ -7862,6 +7931,8 @@
     document.getElementById('newLaborBtn').addEventListener('click', () => openLaborDialog());
     document.getElementById('newStaffMoveBtn').addEventListener('click', openStaffDialog);
     document.getElementById('staffForm').addEventListener('submit', submitStaffMove);
+    document.getElementById('cargarQuincenaBtn').addEventListener('click', openQuincenaDialog);
+    document.getElementById('quincenaForm').addEventListener('submit', submitQuincena);
     document.getElementById('laborForm').addEventListener('submit', submitLabor);
     document.getElementById('laborDeleteBtn').addEventListener('click', () => {
       const id = state.editingLaborId;
@@ -8715,6 +8786,7 @@
     document.getElementById('newLaborBtn').classList.toggle('hidden', !isLabor);
     document.getElementById('staffModule').classList.toggle('hidden', !isStaff);
     document.getElementById('newStaffMoveBtn').classList.toggle('hidden', !isStaff || !state.empleadoElegido);
+    document.getElementById('cargarQuincenaBtn').classList.toggle('hidden', !isStaff);
     document.getElementById('newIntakeBtn').classList.toggle('hidden', !isIntakes);
     if (isIntakes) document.getElementById('newIntakeBtn').textContent = 'Nuevo ingreso';
     document.body.classList.toggle('notes-view', isNotes);
@@ -8920,6 +8992,99 @@
     callServer('apiAddMovimientoEmpleado', state.empleadoElegido, payload)
       .then(data => updateData(data, 'Movimiento cargado.'))
       .catch(showError);
+  }
+
+  // El nombre de la quincena se propone solo con las mismas palabras que usaba
+  // la planilla ("PRIMERA QUINCENA AGOSTO"), asi el historial se lee parejo y
+  // ademas sirve para detectar si esta quincena ya se cargo.
+  function nombreQuincena(fecha) {
+    const meses = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+                   'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
+    const mitad = fecha.getDate() <= 15 ? 'PRIMERA' : 'SEGUNDA';
+    return `${mitad} QUINCENA ${meses[fecha.getMonth()]}`;
+  }
+
+  function openQuincenaDialog() {
+    const form = document.getElementById('quincenaForm');
+    form.reset();
+    showQuincenaError('');
+
+    const hoy = new Date();
+    form.elements.concepto.value = nombreQuincena(hoy);
+    form.elements.fecha.value = [
+      hoy.getFullYear(),
+      String(hoy.getMonth() + 1).padStart(2, '0'),
+      String(hoy.getDate()).padStart(2, '0')
+    ].join('-');
+
+    const empleados = (state.data.empleados || []).filter(e => e.status !== 'archived');
+    document.getElementById('quincenaLista').innerHTML = empleados.map(e => `
+      <label class="quincena-fila">
+        <input type="checkbox" data-quincena-check value="${e.id}" checked>
+        <span>${escapeHtml(e.nombre)}</span>
+        <input type="number" data-quincena-monto data-id="${e.id}" min="0" step="1000"
+               inputmode="numeric" value="${Math.round((e.sueldoMensual || 0) / 2)}">
+      </label>
+    `).join('');
+
+    document.getElementById('quincenaLista')
+      .querySelectorAll('input')
+      .forEach(campo => campo.addEventListener('input', actualizarTotalQuincena));
+
+    actualizarTotalQuincena();
+    document.getElementById('quincenaDialog').showModal();
+  }
+
+  function leerQuincena() {
+    return Array.from(document.querySelectorAll('[data-quincena-check]'))
+      .filter(check => check.checked)
+      .map(check => {
+        const campo = document.querySelector(`[data-quincena-monto][data-id="${check.value}"]`);
+        return { employeeId: check.value, monto: Number(campo && campo.value) || 0 };
+      })
+      .filter(item => item.monto > 0);
+  }
+
+  function actualizarTotalQuincena() {
+    const items = leerQuincena();
+    const total = items.reduce((suma, item) => suma + item.monto, 0);
+    document.getElementById('quincenaTotal').textContent =
+      `${items.length} ${items.length === 1 ? 'persona' : 'personas'} · ${money.format(total)}`;
+  }
+
+  function showQuincenaError(message) {
+    const element = document.getElementById('quincenaFormError');
+    element.textContent = message || '';
+    element.classList.toggle('hidden', !message);
+  }
+
+  function submitQuincena(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const items = leerQuincena();
+    if (!items.length) {
+      showQuincenaError('Marcá al menos a una persona con un importe.');
+      return;
+    }
+    showQuincenaError('');
+
+    const payload = {
+      concepto: String(form.elements.concepto.value || '').trim().toUpperCase(),
+      fecha: form.elements.fecha.value,
+      items: items
+    };
+
+    form.closest('dialog').close();
+    showStaffStatus('Cargando la quincena...', true);
+    callServer('apiCargarQuincena', payload).then(data => {
+      // Se avisa cuando alguien quedo afuera por repetido: si no, apretar dos
+      // veces parece que funciono y en realidad no cargo nada.
+      const repetidos = data.quincenaRepetidos || 0;
+      const mensaje = repetidos
+        ? `Cargada a ${data.quincenaCargados}. A ${repetidos} ya se le habia cargado esta quincena.`
+        : `Quincena cargada a ${data.quincenaCargados}.`;
+      updateData(data, mensaje);
+    }).catch(showError);
   }
 
   function openStaffDialog() {
