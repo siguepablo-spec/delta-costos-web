@@ -6618,6 +6618,203 @@
       min-height: 220px;
     }
   }
+
+  /* Rediseño final de la carga directa: una sola columna, lectura clara y
+     una zona de escritura amplia, pensada para usar con una mano. */
+  body.intake-only #intakeDialog .intake-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+    background: #0b121c;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  body.intake-only #intakeDialog .dialog-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 48px;
+    gap: 12px;
+    align-items: center;
+    min-height: 64px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid rgba(111, 176, 247, 0.18);
+  }
+
+  body.intake-only #intakeDialog .intake-title-wrap {
+    min-width: 0;
+  }
+
+  body.intake-only #intakeDialog .intake-kicker {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--accent-strong);
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.12em;
+  }
+
+  body.intake-only #intakeDialog .dialog-head h2 {
+    font-size: 1.8rem;
+    line-height: 1;
+    text-transform: none;
+  }
+
+  body.intake-only #intakeDialog .intake-close-button {
+    width: 48px;
+    min-width: 48px;
+    height: 48px;
+    min-height: 48px;
+    border-color: rgba(134, 151, 171, 0.38);
+    border-radius: 50%;
+    font-size: 1.25rem;
+  }
+
+  body.intake-only #intakeDialog .auto-stamp {
+    justify-content: flex-start;
+    min-height: 42px;
+    margin: 14px 0 20px;
+    padding: 8px 12px;
+    border: 0;
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    background: rgba(30, 44, 61, 0.72);
+  }
+
+  body.intake-only #intakeDialog .auto-stamp span {
+    font-size: 0.86rem;
+  }
+
+  body.intake-only #intakeDialog .auto-stamp strong {
+    margin-left: auto;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: rgba(76, 154, 240, 0.16);
+    font-size: 0.66rem;
+  }
+
+  body.intake-only #intakeDialog .intake-quick-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+
+  body.intake-only #intakeDialog label {
+    gap: 8px;
+    color: #a8b8c9;
+    font-size: 0.78rem;
+    line-height: 1.1;
+    letter-spacing: 0.04em;
+  }
+
+  body.intake-only #intakeDialog input,
+  body.intake-only #intakeDialog textarea {
+    min-height: 60px;
+    padding: 14px 16px;
+    border: 1px solid #2b4058;
+    border-radius: 10px;
+    background: #111d2b;
+    font-size: 1.12rem;
+    font-weight: 600;
+    line-height: 1.25;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  body.intake-only #intakeDialog input:focus,
+  body.intake-only #intakeDialog textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(76, 154, 240, 0.16);
+    outline: none;
+  }
+
+  body.intake-only #intakeDialog .intake-detail-field {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 230px;
+  }
+
+  body.intake-only #intakeDialog .intake-detail-field textarea {
+    flex: 1 1 auto;
+    min-height: 230px;
+    height: auto;
+    resize: vertical;
+    line-height: 1.4;
+  }
+
+  body.intake-only #intakeDialog .intake-mobile-hint {
+    margin: 8px 0 14px;
+    font-size: 0.76rem;
+  }
+
+  body.intake-only #intakeDialog .dialog-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: block;
+    margin: 0 -14px -12px;
+    padding: 12px 14px max(12px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(11, 18, 28, 0), #0b121c 24%);
+  }
+
+  body.intake-only #intakeDialog .dialog-actions .primary {
+    min-height: 64px;
+    border-radius: 10px;
+    font-size: 1.12rem;
+    letter-spacing: 0;
+  }
+
+  @media (min-width: 430px) {
+    body.intake-only #intakeDialog .intake-quick-fields {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr);
+    }
+  }
+
+  @media (max-height: 700px) {
+    body.intake-only #intakeDialog .intake-dialog {
+      min-height: 100dvh;
+    }
+
+    body.intake-only #intakeDialog .auto-stamp {
+      margin-bottom: 14px;
+    }
+
+    body.intake-only #intakeDialog .intake-quick-fields {
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    body.intake-only #intakeDialog .intake-detail-field,
+    body.intake-only #intakeDialog .intake-detail-field textarea {
+      min-height: 170px;
+    }
+  }
+
+  @media (orientation: landscape) and (max-height: 560px) {
+    body.intake-only #intakeDialog .intake-dialog {
+      display: grid;
+      grid-template-columns: minmax(230px, 0.8fr) minmax(300px, 1.2fr);
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      column-gap: 20px;
+      row-gap: 0;
+      overflow-y: auto;
+    }
+
+    body.intake-only #intakeDialog .dialog-head,
+    body.intake-only #intakeDialog .auto-stamp,
+    body.intake-only #intakeDialog .intake-quick-fields {
+      grid-column: 1;
+    }
+
+    body.intake-only #intakeDialog .dialog-head { grid-row: 1; }
+    body.intake-only #intakeDialog .auto-stamp { grid-row: 2; margin: 10px 0 12px; }
+    body.intake-only #intakeDialog .intake-quick-fields { grid-row: 3; margin: 0; }
+    body.intake-only #intakeDialog .intake-detail-field { grid-column: 2; grid-row: 1 / 4; min-height: 0; }
+    body.intake-only #intakeDialog .intake-mobile-hint { grid-column: 2; grid-row: 4; }
+    body.intake-only #intakeDialog .dialog-actions { grid-column: 2; grid-row: 5; margin: 0 -14px -12px; }
+    body.intake-only #intakeDialog .intake-detail-field textarea { min-height: 220px; }
+  }
 </style>
   </head>
   <body>
@@ -7726,7 +7923,10 @@
     <dialog id="intakeDialog">
       <form method="dialog" id="intakeForm" class="dialog-card intake-dialog">
         <div class="dialog-head">
-          <h2 id="intakeDialogTitle">Ingreso de cliente</h2>
+          <div class="intake-title-wrap">
+            <span class="intake-kicker">DELTA TALLER</span>
+            <h2 id="intakeDialogTitle">Nuevo ingreso</h2>
+          </div>
           <button type="button" class="icon-button intake-close-button" data-close-dialog aria-label="Cerrar sin cargar">X</button>
         </div>
         <div class="auto-stamp">
@@ -7744,10 +7944,10 @@
           </label>
         </div>
         <label class="intake-field intake-detail-field">
-          Detalle del ingreso
-          <textarea name="detail" rows="6" placeholder="Ej: Meriva ABC123&#10;Km 152000&#10;Ruido tren delantero&#10;Cambiar aceite y filtro"></textarea>
+          Trabajo a realizar
+          <textarea name="detail" rows="6" placeholder="Patente, kilometraje, vehículo y trabajo...&#10;&#10;Ej: ABC123 · 152.000 km · Meriva&#10;Ruido en tren delantero&#10;Cambiar aceite y filtro"></textarea>
         </label>
-        <p class="muted intake-mobile-hint">Patente, kilometraje, auto y trabajo pueden ir juntos en el detalle.</p>
+        <p class="muted intake-mobile-hint">Podés escribir todo el ingreso en varias líneas.</p>
         <div class="dialog-actions">
           <button type="button" class="ghost intake-cancel-button" data-close-dialog>Cancelar</button>
           <button type="submit" class="primary">Registrar ingreso</button>
