@@ -6344,10 +6344,14 @@
      ----------------------------------------------------------------------- */
   body.intake-only {
     background: #0B121C;
+    min-height: 100dvh;
+    overflow: hidden;
+    touch-action: manipulation;
   }
 
   body.intake-only .app-shell {
     width: 100%;
+    min-height: 100dvh;
     padding: 0;
   }
 
@@ -6366,6 +6370,7 @@
     border-radius: 0;
     background: #0B121C;
     color: var(--text);
+    overflow: hidden;
   }
 
   body.intake-only #intakeDialog::backdrop {
@@ -6373,13 +6378,16 @@
   }
 
   body.intake-only #intakeDialog .intake-dialog {
+    --intake-pad-x: clamp(12px, 3.4vw, 22px);
+    --intake-pad-y: clamp(10px, 2.4vh, 18px);
+    --intake-gap: clamp(9px, 1.7vh, 14px);
     display: grid;
     grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
-    gap: 12px;
+    gap: var(--intake-gap);
     width: 100%;
     min-height: 100dvh;
     max-height: 100dvh;
-    padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+    padding: max(var(--intake-pad-y), env(safe-area-inset-top)) var(--intake-pad-x) max(var(--intake-pad-y), env(safe-area-inset-bottom));
     border: 0;
     border-radius: 0;
     background: #0B121C;
@@ -6390,7 +6398,7 @@
   body.intake-only #intakeDialog .dialog-head {
     position: static;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 48px;
+    grid-template-columns: minmax(0, 1fr) clamp(44px, 11vw, 52px);
     align-items: center;
     gap: 10px;
     margin: 0;
@@ -6403,18 +6411,18 @@
     margin: 0;
     color: var(--text);
     font-family: var(--display);
-    font-size: clamp(1.72rem, 8vw, 2.35rem);
+    font-size: clamp(1.6rem, 2.1rem, 2.1rem);
     font-weight: 800;
-    line-height: 0.98;
-    letter-spacing: 0.02em;
+    line-height: 1;
+    letter-spacing: 0;
     text-transform: uppercase;
   }
 
   body.intake-only #intakeDialog .intake-close-button {
-    width: 48px;
-    min-width: 48px;
-    height: 48px;
-    min-height: 48px;
+    width: clamp(44px, 11vw, 52px);
+    min-width: clamp(44px, 11vw, 52px);
+    height: clamp(44px, 11vw, 52px);
+    min-height: clamp(44px, 11vw, 52px);
     border-radius: 8px;
     padding: 0;
     color: var(--muted);
@@ -6427,9 +6435,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    min-height: 42px;
+    min-height: clamp(38px, 5.6vh, 48px);
     margin: 0;
-    padding: 8px 10px;
+    padding: 8px clamp(10px, 3vw, 14px);
     border: 1px solid rgba(76, 154, 240, 0.20);
     border-radius: 8px;
     background: rgba(30, 44, 61, 0.72);
@@ -6438,7 +6446,7 @@
   body.intake-only #intakeDialog .auto-stamp span {
     min-width: 0;
     color: var(--muted);
-    font-size: 0.9rem;
+    font-size: clamp(0.82rem, 0.92rem, 0.92rem);
     font-weight: 800;
   }
 
@@ -6452,7 +6460,7 @@
   body.intake-only #intakeDialog .intake-quick-fields {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
+    gap: var(--intake-gap);
   }
 
   body.intake-only #intakeDialog label {
@@ -6460,20 +6468,21 @@
     gap: 6px;
     min-width: 0;
     color: var(--muted);
-    font-size: 0.92rem;
+    font-size: clamp(0.82rem, 0.92rem, 0.92rem);
     font-weight: 950;
     line-height: 1;
     text-transform: uppercase;
+    letter-spacing: 0;
   }
 
   body.intake-only #intakeDialog input,
   body.intake-only #intakeDialog textarea {
     width: 100%;
-    min-height: 56px;
+    min-height: clamp(52px, 7vh, 64px);
     border-radius: 8px;
-    padding: 12px 13px;
+    padding: clamp(10px, 2.1vh, 14px) clamp(12px, 3.4vw, 16px);
     color: var(--text);
-    font-size: 1.2rem;
+    font-size: clamp(1.05rem, 1.22rem, 1.22rem);
     font-weight: 800;
     line-height: 1.22;
   }
@@ -6488,7 +6497,7 @@
   }
 
   body.intake-only #intakeDialog .intake-detail-field textarea {
-    min-height: 0;
+    min-height: clamp(190px, 32vh, 360px);
     height: 100%;
     resize: none;
   }
@@ -6497,7 +6506,7 @@
     display: block;
     margin: -4px 0 0;
     color: var(--muted);
-    font-size: 0.86rem;
+    font-size: clamp(0.78rem, 0.86rem, 0.86rem);
     line-height: 1.25;
   }
 
@@ -6516,15 +6525,97 @@
 
   body.intake-only #intakeDialog .dialog-actions .primary {
     width: 100%;
-    min-height: 66px;
+    min-height: clamp(60px, 8vh, 72px);
     border-radius: 8px;
-    font-size: 1.18rem;
+    font-size: clamp(1.05rem, 1.18rem, 1.18rem);
     font-weight: 950;
   }
 
   @media (min-width: 430px) {
     body.intake-only #intakeDialog .intake-quick-fields {
       grid-template-columns: minmax(0, 1fr) minmax(0, 0.78fr);
+    }
+  }
+
+  @media (max-width: 360px) {
+    body.intake-only #intakeDialog .intake-dialog {
+      --intake-pad-x: 10px;
+      --intake-gap: 8px;
+    }
+
+    body.intake-only #intakeDialog .dialog-head h2 {
+      font-size: 1.42rem;
+    }
+
+    body.intake-only #intakeDialog input,
+    body.intake-only #intakeDialog textarea {
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-height: 680px) {
+    body.intake-only {
+      overflow: auto;
+    }
+
+    body.intake-only #intakeDialog,
+    body.intake-only #intakeDialog .intake-dialog {
+      min-height: 100dvh;
+      max-height: none;
+      overflow-y: auto;
+    }
+
+    body.intake-only #intakeDialog .intake-dialog {
+      grid-template-rows: auto auto auto minmax(180px, 1fr) auto auto;
+    }
+
+    body.intake-only #intakeDialog .intake-detail-field textarea {
+      min-height: 180px;
+    }
+
+    body.intake-only #intakeDialog .dialog-actions {
+      position: sticky;
+      bottom: 0;
+      padding-top: 6px;
+      background: linear-gradient(180deg, rgba(11, 18, 28, 0), #0B121C 34%);
+    }
+  }
+
+  @media (orientation: landscape) and (max-height: 560px) {
+    body.intake-only #intakeDialog .intake-dialog {
+      grid-template-columns: minmax(250px, 0.92fr) minmax(320px, 1.2fr);
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      column-gap: clamp(12px, 2vw, 22px);
+      row-gap: 8px;
+      overflow-y: auto;
+    }
+
+    body.intake-only #intakeDialog .dialog-head,
+    body.intake-only #intakeDialog .auto-stamp,
+    body.intake-only #intakeDialog .intake-quick-fields,
+    body.intake-only #intakeDialog .intake-mobile-hint {
+      grid-column: 1;
+    }
+
+    body.intake-only #intakeDialog .intake-detail-field,
+    body.intake-only #intakeDialog .dialog-actions {
+      grid-column: 2;
+    }
+
+    body.intake-only #intakeDialog .intake-detail-field {
+      grid-row: 1 / 4;
+    }
+
+    body.intake-only #intakeDialog .dialog-actions {
+      grid-row: 4;
+    }
+
+    body.intake-only #intakeDialog .dialog-head h2 {
+      font-size: 1.45rem;
+    }
+
+    body.intake-only #intakeDialog .intake-detail-field textarea {
+      min-height: 220px;
     }
   }
 </style>
