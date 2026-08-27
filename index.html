@@ -278,7 +278,11 @@
     margin: 0;
     min-width: 0;
     max-width: 100%;
-    justify-content: center;
+    /* "safe": centra mientras entre, y cuando NO entra se pega a la izquierda.
+       Con "center" a secas el desborde se recorta de los dos lados y la primera
+       pestaña queda inalcanzable — no se puede scrollear hacia atras. Paso de
+       verdad: la skin Matrix ensancho la letra y desaparecio TALLER. */
+    justify-content: safe center;
     overflow-x: auto;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
@@ -5345,7 +5349,7 @@
     flex-wrap: nowrap;
     gap: 3px;
     width: 100%;
-    justify-content: center;
+    justify-content: safe center;
     overflow-x: auto;
     padding: 3px;
   }
