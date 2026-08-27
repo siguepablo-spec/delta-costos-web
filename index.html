@@ -6815,6 +6815,117 @@
     body.intake-only #intakeDialog .dialog-actions { grid-column: 2; grid-row: 5; margin: 0 -14px -12px; }
     body.intake-only #intakeDialog .intake-detail-field textarea { min-height: 220px; }
   }
+
+  /* ==================================================================
+     SKIN MATRIX
+
+     Toda la app pinta desde las variables de :root, asi que la skin es
+     redefinirlas y nada mas: no hay una sola pantalla tocada, y el dia que se
+     agregue un modulo nuevo ya viene con la skin puesta.
+
+     El vocabulario de color se respeta aunque todo sea verde: el acento manda,
+     el gris apagado sigue siendo lo que no urge, y la alerta se queda ROJA a
+     proposito. Pintar de verde "hay plata en riesgo" seria perder lo unico que
+     tiene que gritar en las cinco pantallas.
+     ================================================================== */
+  body.skin-matrix {
+    --bg: #000A03;
+    --surface: #02160A;
+    --surface-soft: #04240F;
+    --text: #8CFFB0;
+    --muted: #3FA96B;
+    --line: #0B4A22;
+    --accent: #00FF41;
+    --accent-strong: #7CFFA8;
+    --warning: #00E5C0;
+    --falta: #00E5C0;
+    --cobrado: #00FF41;
+    --alerta: #FF4B3E;
+    --patente: #0B4A22;
+    --shadow: 0 14px 34px rgba(0, 255, 65, 0.08);
+  }
+
+  /* Letra de terminal. El display se queda en Barlow porque las cifras grandes
+     son lo que se lee de lejos en el taller y en mono ocupan casi el doble. */
+  body.skin-matrix,
+  body.skin-matrix input,
+  body.skin-matrix textarea,
+  body.skin-matrix select,
+  body.skin-matrix button {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+  }
+
+  body.skin-matrix .brand-mark,
+  body.skin-matrix .boot-brand,
+  body.skin-matrix .clima-grados,
+  body.skin-matrix .staff-saldo,
+  body.skin-matrix .staff-saldo-grande,
+  body.skin-matrix .labor-precio {
+    text-shadow: 0 0 12px rgba(0, 255, 65, 0.45);
+  }
+
+  body.skin-matrix .module-tabs button.active,
+  body.skin-matrix .segmented button.active {
+    background: var(--accent);
+    color: #001B0A;
+    box-shadow: 0 0 14px rgba(0, 255, 65, 0.35);
+  }
+
+  body.skin-matrix .primary {
+    border-color: var(--accent);
+    background: rgba(0, 255, 65, 0.14);
+    color: var(--accent);
+    box-shadow: 0 0 12px rgba(0, 255, 65, 0.18) inset;
+  }
+
+  /* La lluvia va DETRAS de todo y muy tenue: es la firma de la skin, no algo
+     que compita con los numeros. */
+  #matrixRain {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: none;
+    pointer-events: none;
+    opacity: 0.16;
+  }
+
+  body.skin-matrix #matrixRain {
+    display: block;
+  }
+
+  body.skin-matrix .app-shell,
+  body.skin-matrix .topbar,
+  body.skin-matrix dialog {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Rayado de tubo, apenas insinuado. */
+  body.skin-matrix::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(0, 255, 65, 0.045) 0px,
+      rgba(0, 255, 65, 0.045) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body.skin-matrix #matrixRain {
+      display: none;
+    }
+  }
+
+  .skin-boton.encendida {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
 </style>
   </head>
   <body>
@@ -6857,6 +6968,8 @@
       </div>
     </div>
 
+    <canvas id="matrixRain" aria-hidden="true"></canvas>
+
     <div id="bootSplash" class="boot-splash" role="status" aria-live="polite">
       <p class="boot-eyebrow">Taller mecanico</p>
       <p class="boot-brand">DELTA</p>
@@ -6884,6 +6997,7 @@
           </nav>
           <div class="topbar-actions">
             <button class="camera-button" type="button" id="refreshBtn" aria-label="Actualizar" title="Actualizar">↻</button>
+          <button class="camera-button skin-boton" type="button" id="skinBtn" aria-label="Cambiar apariencia" title="Cambiar apariencia" aria-pressed="false">◉</button>
             <button class="camera-button" type="button" id="invoiceCameraBtn" aria-label="Leer factura" title="Leer factura">📷</button>
             <button class="primary" type="button" id="quickRepairBtn">Carga rápida</button>
             <button class="primary" type="button" id="newRepairBtn">Nuevo auto</button>
@@ -8112,6 +8226,7 @@
     }
 
     bindUi();
+    aplicarSkin(skinGuardada());
     if (OPEN_NEW_INTAKE && state.module === 'intakes') {
       state.initialIntakeDialogOpened = true;
       setTimeout(() => openIntakeDialog(), 120);
@@ -8457,6 +8572,81 @@
     });
   }
 
+  // ---------------------------------------------------------------------
+  // Skin
+  //
+  // Se guarda en este navegador, no en la planilla: es una preferencia de
+  // pantalla, y el iPad del taller y la compu de la oficina pueden querer
+  // cosas distintas. Tambien entra por la direccion con ?skin=matrix.
+  // ---------------------------------------------------------------------
+  function skinGuardada() {
+    const desdeUrl = new URLSearchParams(location.search).get('skin');
+    if (desdeUrl) return desdeUrl;
+    try { return localStorage.getItem('delta_skin') || ''; } catch (e) { return ''; }
+  }
+
+  function aplicarSkin(nombre) {
+    const matrix = nombre === 'matrix';
+    document.body.classList.toggle('skin-matrix', matrix);
+    const boton = document.getElementById('skinBtn');
+    if (boton) {
+      boton.classList.toggle('encendida', matrix);
+      boton.setAttribute('aria-pressed', matrix ? 'true' : 'false');
+      boton.title = matrix ? 'Volver a la apariencia normal' : 'Apariencia Matrix';
+    }
+    try { localStorage.setItem('delta_skin', matrix ? 'matrix' : ''); } catch (e) {}
+    if (matrix) arrancarLluvia(); else frenarLluvia();
+  }
+
+  function alternarSkin() {
+    aplicarSkin(document.body.classList.contains('skin-matrix') ? '' : 'matrix');
+  }
+
+  // La lluvia: columnas de caracteres que caen. Se pinta un velo oscuro encima
+  // de lo anterior en vez de borrar, y eso es lo que deja el rastro que se apaga.
+  let lluviaTimer = null;
+  let lluviaColumnas = [];
+
+  function arrancarLluvia() {
+    const lienzo = document.getElementById('matrixRain');
+    if (!lienzo || lluviaTimer) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const pincel = lienzo.getContext('2d');
+    const paso = 16;
+
+    function medir() {
+      lienzo.width = window.innerWidth;
+      lienzo.height = window.innerHeight;
+      lluviaColumnas = new Array(Math.ceil(lienzo.width / paso))
+        .fill(0).map(() => Math.random() * -40);
+    }
+    medir();
+    window.addEventListener('resize', medir);
+
+    const letras = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789<>[]{}/*+-=';
+
+    lluviaTimer = setInterval(() => {
+      // Con la pantalla escondida no se dibuja: un iPad olvidado no tiene por
+      // que gastar bateria en esto.
+      if (document.hidden) return;
+      pincel.fillStyle = 'rgba(0, 10, 3, 0.09)';
+      pincel.fillRect(0, 0, lienzo.width, lienzo.height);
+      pincel.fillStyle = '#00FF41';
+      pincel.font = paso + 'px "IBM Plex Mono", monospace';
+      lluviaColumnas.forEach((y, i) => {
+        pincel.fillText(letras[Math.floor(Math.random() * letras.length)], i * paso, y * paso);
+        lluviaColumnas[i] = (y * paso > lienzo.height && Math.random() > 0.975) ? 0 : y + 1;
+      });
+    }, 55);
+  }
+
+  function frenarLluvia() {
+    if (lluviaTimer) { clearInterval(lluviaTimer); lluviaTimer = null; }
+    const lienzo = document.getElementById('matrixRain');
+    if (lienzo) lienzo.getContext('2d').clearRect(0, 0, lienzo.width, lienzo.height);
+  }
+
   function bindUi() {
     document.getElementById('invoiceCameraBtn').addEventListener('click', openInvoicePicker);
     document.getElementById('invoiceImageInput').addEventListener('change', handleInvoiceImageSelected);
@@ -8521,6 +8711,7 @@
     });
     document.getElementById('newIntakeBtn').addEventListener('click', () => openIntakeDialog());
     document.getElementById('refreshBtn').addEventListener('click', loadCurrentModule);
+    document.getElementById('skinBtn').addEventListener('click', alternarSkin);
     const costHistoryToggle = document.getElementById('costHistoryToggle');
     if (costHistoryToggle) costHistoryToggle.addEventListener('click', toggleCostHistory);
     const internalCostsToggle = document.getElementById('internalCostsToggle');
