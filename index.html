@@ -6847,11 +6847,13 @@
 
   /* Letra de terminal. El display se queda en Barlow porque las cifras grandes
      son lo que se lee de lejos en el taller y en mono ocupan casi el doble. */
+  /* Los BOTONES quedan afuera a proposito: las pestañas usan la tipografia
+     angosta, y en mono no entran las ocho en la barra — se cortaban TALLER y
+     EMPLEADOS. La skin no puede esconder medio menu. */
   body.skin-matrix,
   body.skin-matrix input,
   body.skin-matrix textarea,
-  body.skin-matrix select,
-  body.skin-matrix button {
+  body.skin-matrix select {
     font-family: "IBM Plex Mono", ui-monospace, monospace;
   }
 
