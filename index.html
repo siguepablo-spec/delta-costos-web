@@ -13032,7 +13032,16 @@
     const priorityDiff = (priorityOrder[a.priority] ?? 1) - (priorityOrder[b.priority] ?? 1);
     if (priorityDiff !== 0) return priorityDiff;
 
-    return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+    return fechaEnMs(b.updatedAt) - fechaEnMs(a.updatedAt);
+  }
+
+  // Las fechas NO se comparan como texto. La planilla las devuelve con la forma
+  // "Fri Aug 28 2026 11:02:39 GMT-0300", y ahi el orden alfabetico ordena por el
+  // nombre del dia -Fri antes que Mon antes que Sat- en vez de por cuando paso.
+  // Por eso una nota dictada hoy aparecia debajo de una de hace tres semanas.
+  function fechaEnMs(valor) {
+    const ms = new Date(valor).getTime();
+    return isNaN(ms) ? 0 : ms;
   }
 
   function escapeHtml(value) {
