@@ -6959,7 +6959,9 @@
           || params.get('modulo') === 'ingreso'
           || params.get('modulo') === 'intakes';
 
-        window.DELTA_INITIAL_MODULE = ingreso ? 'intakes' : 'costs';
+        // Arranca en Notas: es la pantalla que se escribe desde afuera (bot y
+        // atajo del telefono) y la que Pablo quiere ver al abrir.
+        window.DELTA_INITIAL_MODULE = ingreso ? 'intakes' : 'notes';
         window.DELTA_INTAKE_ONLY = ingreso;
         window.DELTA_OPEN_NEW_INTAKE = ingreso && params.get('lista') !== '1';
 
@@ -8287,6 +8289,7 @@
   // que avisa y ademas trae fresca la planilla CLIENTES.
   // ---------------------------------------------------------------------
   const AUTO_REFRESH_MS = 120000;
+  const AUTO_REFRESH_NOTAS_MS = 45000;
 
   const AUTO_REFRESH_API = {
     costs: { fn: 'apiBootstrap', loaded: 'costs' },
@@ -8333,15 +8336,31 @@
     });
   }
 
+  // Notas va mas rapido que el resto porque es la unica pantalla que se
+  // escribe desde afuera -del bot de Telegram y del atajo del telefono-, y
+  // sirve justamente para ver aparecer lo que uno acaba de dictar. El resto de
+  // los modulos los carga Pablo desde la misma pantalla, asi que ahi el
+  // refresco de fondo casi nunca trae nada nuevo.
+  function intervaloActual() {
+    return state.module === 'notes' ? AUTO_REFRESH_NOTAS_MS : AUTO_REFRESH_MS;
+  }
+
   function arrancarAutoActualizacion() {
-    setInterval(autoActualizar, AUTO_REFRESH_MS);
+    ultimaCarga = Date.now();
+
+    // Un solo reloj corto que decide en cada vuelta, en vez de un intervalo por
+    // modulo: asi cambiar de pestaña cambia el ritmo en el acto y no quedan dos
+    // relojes pidiendo lo mismo.
+    setInterval(() => {
+      if (Date.now() - ultimaCarga >= intervaloActual()) autoActualizar();
+    }, 15000);
 
     // Volver a la pantalla es el momento en que de verdad importa estar al dia.
     // Ademas, mientras la pestana esta escondida no se pide nada: un iPad
     // olvidado con la app abierta no gasta cuota.
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) return;
-      if (Date.now() - ultimaCarga > AUTO_REFRESH_MS) autoActualizar();
+      if (Date.now() - ultimaCarga > intervaloActual()) autoActualizar();
     });
   }
 
@@ -8940,6 +8959,21 @@
   function loadDashboard() {
     renderModuleShell();
     loadCurrentModule();
+
+    // El resto de la app da por sentado que el bootstrap ya corrio: los
+    // vehiculos y los clientes que llenan los desplegables salen de ahi. Antes
+    // eso pasaba solo, porque siempre se arrancaba en Costos; ahora que se
+    // arranca en Notas hay que traerlo igual, callado y de fondo.
+    if (state.module !== 'costs') {
+      callServer('apiBootstrap').then(data => {
+        state.loaded.costs = true;
+        state.data = Object.assign({}, state.data, data);
+        render();
+      }).catch(() => {
+        // Nadie lo pidio: si falla, el modulo Costos lo vuelve a intentar al
+        // entrar y ahi si se avisa.
+      });
+    }
   }
 
   function loadCurrentModule() {
@@ -8951,6 +8985,9 @@
   }
 
   function ensureCurrentModuleLoaded() {
+    // Costos tambien: al arrancar en Notas puede no haberse cargado todavia, y
+    // sin esta linea la pestaña abre vacia.
+    if (state.module === 'costs' && !state.loaded.costs) loadCosts();
     if ((state.module === 'sales' || state.module === 'accounts') && !state.loaded.sales) loadSales();
     if (state.module === 'notes' && !state.loaded.notes) loadNotes();
     if (state.module === 'labor' && !state.loaded.labor) loadLabor();
