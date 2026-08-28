@@ -764,10 +764,12 @@
     to { transform: translateX(-50%); }
   }
 
+  /* start y no stretch: cada nota mide lo que dice. Estirarlas todas al alto
+     de la mas larga llenaba la fila de recuadros vacios. */
   .notes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
-    align-items: stretch;
+    align-items: start;
     gap: 10px;
     width: 100%;
   }
@@ -897,10 +899,11 @@
     font-size: 1.2rem;
   }
 
+  /* Sin alto minimo: una nota de tres palabras ocupa tres palabras. Antes
+     todas median 205px y las cortas quedaban con medio recuadro vacio. */
   .note-card {
     display: flex;
     flex-direction: column;
-    min-height: 205px;
     border: 1px solid var(--line);
     border-left: 6px solid var(--line);
     border-radius: 8px;
@@ -910,8 +913,44 @@
   }
 
   .note-title {
-    margin: 0 0 4px;
+    margin: 0;
     font-size: 1.02rem;
+  }
+
+  .note-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* El menu de la nota se abre HACIA ABAJO, al reves que el de las otras
+     tarjetas: aca el "..." vive arriba de todo, y el panel de siempre -que
+     sube- se saldria por el techo de la pantalla. */
+  .note-menu {
+    position: relative;
+    flex: 0 0 auto;
+  }
+
+  .note-menu .card-menu summary {
+    min-width: 30px;
+    min-height: 30px;
+    border-color: transparent;
+    background: transparent;
+  }
+
+  .note-menu .card-menu-items {
+    top: calc(100% + 6px);
+    right: 0;
+    bottom: auto;
+    left: auto;
+    min-width: 150px;
+  }
+
+  .note-when {
+    margin: 10px 0 0;
+    color: var(--muted);
+    font-size: 0.8rem;
   }
 
   .note-body {
@@ -10920,26 +10959,51 @@
       ? `<button type="button" data-note-action="restore" data-id="${note.id}">Restaurar</button>`
       : `<button type="button" data-note-action="archive" data-id="${note.id}">Archivar</button>`;
 
+    // Los tres botones se van adentro del "...": en una nota lo que importa es
+    // lo que dice, no lo que se puede hacer con ella. Antes pesaban mas que el
+    // texto y se repetian en cada tarjeta.
+    const menu = cardMenu([
+      `<button type="button" data-note-action="edit" data-id="${note.id}">Editar</button>`,
+      archiveAction,
+      `<button type="button" data-note-action="delete" data-id="${note.id}" class="danger">Eliminar</button>`
+    ]);
+
+    // La prioridad ya la dice la barra de color de la izquierda; el cartelito
+    // repetia lo mismo al lado. Queda solo cuando esta archivada, que eso el
+    // color no lo cuenta.
     return `
-      <article class="note-card priority-${note.priority}${isArchived ? ' status-archived' : ''}">
-        <div class="card-header">
-          <div>
-            <h2 class="note-title">${escapeHtml(note.title)}</h2>
-            <p class="meta">Actualizada ${formatDateTime(note.updatedAt)}</p>
-          </div>
-          <div class="chip-stack">
-            <span class="priority-chip ${note.priority}">${priorityLabel}</span>
-            ${isArchived ? '<span class="chip archived">Archivada</span>' : ''}
-          </div>
+      <article class="note-card priority-${note.priority}${isArchived ? ' status-archived' : ''}"
+               title="Prioridad ${priorityLabel.toLowerCase()}">
+        <div class="note-head">
+          <h2 class="note-title">${escapeHtml(note.title)}</h2>
+          <div class="note-menu">${menu}</div>
         </div>
-        <p class="note-body">${escapeHtml(note.body || 'Sin detalle.')}</p>
-        <div class="note-actions">
-          <button type="button" data-note-action="edit" data-id="${note.id}">Editar</button>
-          ${archiveAction}
-          <button type="button" data-note-action="delete" data-id="${note.id}">Eliminar</button>
-        </div>
+        ${note.body ? `<p class="note-body">${escapeHtml(note.body)}</p>` : ''}
+        <p class="note-when">
+          ${escapeHtml(tiempoRelativo(note.updatedAt))}${isArchived ? ' · archivada' : ''}
+        </p>
       </article>
     `;
+  }
+
+  // "hace 2 h" se entiende de un vistazo; "Actualizada 28/08/2026 10:23" hay
+  // que leerlo y restar mentalmente. Pasada la semana vuelve la fecha, que es
+  // cuando de verdad importa el dia exacto.
+  function tiempoRelativo(valor) {
+    const fecha = new Date(valor);
+    if (isNaN(fecha.getTime())) return '';
+
+    const minutos = Math.round((Date.now() - fecha.getTime()) / 60000);
+    if (minutos < 1) return 'recien';
+    if (minutos < 60) return 'hace ' + minutos + ' min';
+
+    const horas = Math.round(minutos / 60);
+    if (horas < 24) return 'hace ' + horas + (horas === 1 ? ' hora' : ' horas');
+
+    const dias = Math.round(horas / 24);
+    if (dias <= 7) return 'hace ' + dias + (dias === 1 ? ' dia' : ' dias');
+
+    return formatDateTime(valor);
   }
 
   function renderInternalCostCard(item) {
