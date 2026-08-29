@@ -9450,7 +9450,14 @@
     // Sin titulo, lo arma con las primeras palabras del texto. "Sin titulo" no
     // dice nada en la grilla y encima no se puede buscar: hay que abrir la nota
     // para saber que era.
-    if (!payload.title) payload.title = tituloDesdeTexto(payload.body);
+    if (!payload.title) {
+      payload.title = tituloDesdeTexto(payload.body);
+
+      // Si el titulo se llevo el texto entero, el cuerpo lo repetiria justo
+      // debajo. Se vacia, que es como quedan las notas dictadas desde el
+      // telefono cuando son de un solo renglon.
+      if (payload.title === payload.body.replace(/\s+/g, ' ').trim()) payload.body = '';
+    }
 
     const request = state.editingNoteId
       ? callServer('apiUpdateNote', state.editingNoteId, payload)
