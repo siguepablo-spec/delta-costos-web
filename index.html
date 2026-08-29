@@ -768,10 +768,19 @@
   }
 
   /* start y no stretch: cada nota mide lo que dice. Estirarlas todas al alto
-     de la mas larga llenaba la fila de recuadros vacios. */
+     de la mas larga llenaba la fila de recuadros vacios.
+
+     Las filas son de 8px y cada nota ocupa las que necesita (lo calcula
+     acomodarNotas() en el cliente). Con filas normales, una nota larga empuja
+     hacia abajo a TODA la fila siguiente y quedan huecos entre renglon y
+     renglon; con filas finas, cada nota sube hasta donde llega la de arriba,
+     como un corcho. Se hace asi y no con columnas de CSS para no perder el
+     orden: las notas tienen que leerse de izquierda a derecha, con la mas
+     nueva primera. */
   .notes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
+    grid-auto-rows: 8px;
     align-items: start;
     gap: 10px;
     width: 100%;
@@ -8262,9 +8271,11 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     applyMobileScale();
-    // Girar el iPad cambia el ancho: hay que volver a decidir la escala.
-    window.addEventListener('resize', applyMobileScale);
-    window.addEventListener('orientationchange', applyMobileScale);
+    // Girar el iPad cambia el ancho: hay que volver a decidir la escala, y
+    // ademas las notas cambian de alto porque el texto se reparte distinto,
+    // asi que hay que recalcular cuanto ocupa cada una.
+    window.addEventListener('resize', () => { applyMobileScale(); acomodarNotas(); });
+    window.addEventListener('orientationchange', () => { applyMobileScale(); acomodarNotas(); });
     // Sin clave no se pide nada: mejor un cartel claro que una pantalla vacia
     // con errores de "clave invalida" en cada modulo.
     if (!window.DELTA_CLAVE) {
@@ -10163,8 +10174,35 @@
       button.addEventListener('click', () => handleNoteAction(button.dataset.noteAction, button.dataset.id));
     });
 
+    acomodarNotas();
+
     const message = notes.length ? '' : 'No hay notas para mostrar.';
     showNotesStatus(message, !notes.length);
+  }
+
+  // Acomoda las notas como en un corcho: cada una sube hasta donde llega la de
+  // arriba, en vez de esperar a que termine la fila entera.
+  //
+  // La grilla tiene filas de 8px y aca se le dice a cada nota cuantas ocupa. El
+  // "+ hueco" de los dos lados es porque entre fila y fila hay separacion: sin
+  // eso, una nota de 100px pediria 13 filas y le sobraria la mitad del ultimo
+  // renglon.
+  function acomodarNotas() {
+    const grid = document.getElementById('notesCards');
+    if (!grid) return;
+
+    const estilo = getComputedStyle(grid);
+    const unidad = parseFloat(estilo.gridAutoRows) || 0;
+    const hueco = parseFloat(estilo.rowGap) || 0;
+    if (!unidad) return;
+
+    Array.prototype.forEach.call(grid.children, tarjeta => {
+      const alto = tarjeta.getBoundingClientRect().height;
+      // Con la pestaña escondida todo mide cero: se deja como esta y se
+      // reacomoda al volver, que es cuando se puede medir de verdad.
+      if (!alto) return;
+      tarjeta.style.gridRowEnd = 'span ' + Math.ceil((alto + hueco) / (unidad + hueco));
+    });
   }
 
   // El panel se lee de un vistazo y a un par de metros, asi que cada dato entra
