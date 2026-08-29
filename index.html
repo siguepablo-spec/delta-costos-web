@@ -8274,8 +8274,15 @@
     // Girar el iPad cambia el ancho: hay que volver a decidir la escala, y
     // ademas las notas cambian de alto porque el texto se reparte distinto,
     // asi que hay que recalcular cuanto ocupa cada una.
-    window.addEventListener('resize', () => { applyMobileScale(); acomodarNotas(); });
-    window.addEventListener('orientationchange', () => { applyMobileScale(); acomodarNotas(); });
+    // El reacomodo va en el cuadro siguiente y no en el acto: recien ahi el
+    // navegador termino de repartir el texto en el ancho nuevo, y las alturas
+    // que se miden son las de verdad.
+    const alCambiarElAncho = () => {
+      applyMobileScale();
+      requestAnimationFrame(acomodarNotas);
+    };
+    window.addEventListener('resize', alCambiarElAncho);
+    window.addEventListener('orientationchange', alCambiarElAncho);
     // Sin clave no se pide nada: mejor un cartel claro que una pantalla vacia
     // con errores de "clave invalida" en cada modulo.
     if (!window.DELTA_CLAVE) {
@@ -10195,6 +10202,14 @@
     const unidad = parseFloat(estilo.gridAutoRows) || 0;
     const hueco = parseFloat(estilo.rowGap) || 0;
     if (!unidad) return;
+
+    // Primero se borra la medida anterior de TODAS, y recien despues se mide.
+    // Si no, al angostar la ventana el texto se reparte en mas renglones, la
+    // nota crece, y se termina midiendo con la medida vieja encima: quedaban
+    // notas pidiendo mas lugar del que necesitaban y se abrian huecos.
+    Array.prototype.forEach.call(grid.children, tarjeta => {
+      tarjeta.style.gridRowEnd = '';
+    });
 
     Array.prototype.forEach.call(grid.children, tarjeta => {
       const alto = tarjeta.getBoundingClientRect().height;
