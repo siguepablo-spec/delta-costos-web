@@ -751,9 +751,12 @@
     white-space: nowrap;
   }
 
+  /* Sin min-width: la pista tiene que medir lo que mide el texto. Forzada al
+     100% de la ventana, el corrimiento del 50% dejaba de ser una copia exacta
+     y aparecia el hueco. La duracion la pone pintarFranjaNoticias() segun el
+     ancho, para que la velocidad no dependa de cuantos titulares haya. */
   .ticker-track {
     display: inline-block;
-    min-width: 100%;
     color: var(--text);
     font-weight: 800;
     animation: techTicker 52s linear infinite;
@@ -8524,13 +8527,29 @@
   const NOTICIAS_URL =
     'https://script.google.com/macros/s/AKfycby81Xt4PqGnZ-bIRA25GKQRf75qKICcjYMDSKI2nij3mnXB7U9ntT10N8E_663ogojS9w/exec?q=noticias';
 
+  // El panel entero se refresca cada 10 minutos por el clima, que cambia. Los
+  // titulares no: se piden cada 30 y el resto de las veces se reusan los que ya
+  // estan en pantalla. Es una llamada al servidor cada media hora en vez de
+  // tres, sin que se note la diferencia leyendo.
+  const NOTICIAS_CADA_MS = 1800000;
+  let noticiasUltimaBusqueda = 0;
+
   function fetchNoticiasPanel() {
+    const previas = (state.notesPanel && state.notesPanel.news) || null;
+    if (previas && previas.ok && Date.now() - noticiasUltimaBusqueda < NOTICIAS_CADA_MS) {
+      return Promise.resolve(previas);
+    }
+
     return pedirJson(NOTICIAS_URL)
       .then(data => {
         const items = (data && data.items || []).filter(item => item && item.titulo);
-        return { ok: items.length > 0, items: items };
+        if (!items.length) throw new Error('Noticias sin datos');
+        noticiasUltimaBusqueda = Date.now();
+        return { ok: true, items: items };
       })
-      .catch(() => ({ ok: false, items: [] }));
+      // Si falla, se queda con las que ya tenia: titulares de hace media hora
+      // se leen igual, y una franja vacia canta que algo se rompio.
+      .catch(() => previas && previas.ok ? previas : { ok: false, items: [] });
   }
 
   // ---------------------------------------------------------------------
@@ -9397,6 +9416,19 @@
     request.then(data => updateData(data, state.editingCommercialAccountId ? 'Cuenta actualizada.' : 'Cuenta creada.')).catch(showError);
   }
 
+  // Corta por palabra entera y no a los 60 caracteres justos: "cambiar la corre"
+  // se lee peor que "cambiar la...". Si la primera palabra ya es larguisima, se
+  // corta igual, que es mejor que desbordar la tarjeta.
+  function tituloDesdeTexto(texto) {
+    const limpio = String(texto || '').replace(/\s+/g, ' ').trim();
+    if (!limpio) return '';
+    if (limpio.length <= 60) return limpio;
+
+    const corte = limpio.slice(0, 60);
+    const ultimoEspacio = corte.lastIndexOf(' ');
+    return (ultimoEspacio > 25 ? corte.slice(0, ultimoEspacio) : corte) + '...';
+  }
+
   function submitNote(event) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -9414,6 +9446,11 @@
       return;
     }
     showNoteFormError('');
+
+    // Sin titulo, lo arma con las primeras palabras del texto. "Sin titulo" no
+    // dice nada en la grilla y encima no se puede buscar: hay que abrir la nota
+    // para saber que era.
+    if (!payload.title) payload.title = tituloDesdeTexto(payload.body);
 
     const request = state.editingNoteId
       ? callServer('apiUpdateNote', state.editingNoteId, payload)
@@ -10208,14 +10245,59 @@
       }).join('');
     }
 
-    const track = document.getElementById('techTickerTrack');
     const items = news.ok && news.items && news.items.length ? news.items : [];
-    const text = items.length
+    pintarFranjaNoticias(items.length
       ? items.map(item => `${item.titulo}${item.fuente ? ' · ' + item.fuente : ''}`).join('  •  ')
-      : 'Sin datos';
-    track.textContent = `${text}  •  ${text}`;
+      : 'Sin datos');
 
     renderIndicadores();
+  }
+
+  // ---------------------------------------------------------------------
+  // La franja que corre
+  //
+  // El truco es viejo y simple: se escribe el texto DOS veces y se corre media
+  // pista; cuando la primera copia termina de salir, la segunda esta justo
+  // donde arranco la primera y el salto no se ve.
+  //
+  // Pero eso solo cierra si cada copia es MAS ANCHA que la ventana. Con pocos
+  // titulares -o una pantalla ancha- la copia queda corta, y entre que se va
+  // una y entra la otra queda un hueco: el texto parecia borrarse a mitad de
+  // renglon. Por eso el texto se repite las veces que haga falta para tapar la
+  // ventana ANTES de duplicarlo.
+  //
+  // La velocidad tambien se calcula: antes eran 52 segundos fijos, asi que con
+  // muchos titulares volaba y con pocos se arrastraba. Ahora son siempre 55
+  // pixeles por segundo, lea lo que lea.
+  // ---------------------------------------------------------------------
+  const FRANJA_SEPARADOR = '  •  ';
+  const FRANJA_PIXELES_POR_SEGUNDO = 55;
+
+  function pintarFranjaNoticias(texto) {
+    const track = document.getElementById('techTickerTrack');
+    const ventana = track.parentElement;
+    if (!track) return;
+
+    const unidad = texto + FRANJA_SEPARADOR;
+    track.textContent = unidad;
+
+    const anchoUnidad = track.scrollWidth;
+    const anchoVentana = ventana ? ventana.clientWidth : 0;
+
+    // Con la pestaña escondida los anchos dan cero y no hay nada que calcular.
+    // Se deja el texto duplicado -que es lo que habia siempre- y al volver a la
+    // pantalla se vuelve a dibujar con las medidas de verdad.
+    if (!anchoUnidad || !anchoVentana) {
+      track.textContent = unidad + unidad;
+      return;
+    }
+
+    const copias = Math.max(1, Math.ceil(anchoVentana / anchoUnidad));
+    const bloque = unidad.repeat(copias);
+
+    track.textContent = bloque + bloque;
+    track.style.animationDuration =
+      Math.round((anchoUnidad * copias) / FRANJA_PIXELES_POR_SEGUNDO) + 's';
   }
 
   // Las lineas de fondo son puro contexto: dicen si el numero de hoy es alto o
