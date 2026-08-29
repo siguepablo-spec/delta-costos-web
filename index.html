@@ -10272,11 +10272,23 @@
   // ---------------------------------------------------------------------
   const FRANJA_SEPARADOR = '  •  ';
   const FRANJA_PIXELES_POR_SEGUNDO = 55;
+  let franjaPintada = '';
 
   function pintarFranjaNoticias(texto) {
     const track = document.getElementById('techTickerTrack');
-    const ventana = track.parentElement;
     if (!track) return;
+    const ventana = track.parentElement;
+
+    // ESTA ES LA LINEA QUE ARREGLA EL SALTO.
+    //
+    // Reescribir el texto reinicia la animacion desde cero, y esta funcion la
+    // llama CADA redibujado de la pantalla: el refresco de fondo, guardar una
+    // nota, cambiar un filtro. La franja volvia al principio a mitad de
+    // renglon y parecia que se borraba sola. Si el texto es el mismo de antes,
+    // no se toca y sigue corriendo donde iba.
+    const huella = texto + '|' + (ventana ? ventana.clientWidth : 0);
+    if (huella === franjaPintada) return;
+    franjaPintada = huella;
 
     const unidad = texto + FRANJA_SEPARADOR;
     track.textContent = unidad;
@@ -10289,6 +10301,7 @@
     // pantalla se vuelve a dibujar con las medidas de verdad.
     if (!anchoUnidad || !anchoVentana) {
       track.textContent = unidad + unidad;
+      franjaPintada = '';   // sin medidas de verdad: se rehace al volver
       return;
     }
 
