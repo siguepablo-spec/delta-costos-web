@@ -10305,8 +10305,17 @@
       : baldosa('Euro / Real', '--', '', null, null));
 
     const feriado = proximoFeriado(hist.feriados);
+    // El dia va primero en el pie: el nombre del feriado es largo y se corta,
+    // asi que lo util queda del lado que siempre se ve.
+    const diaFeriado = feriado ? diaDeLaSemana(feriado.fecha) : '';
     partes.push(feriado
-      ? baldosa('Proximo feriado', fechaCorta(feriado.fecha), feriado.nombre, null, null)
+      ? baldosa(
+          'Proximo feriado',
+          fechaCorta(feriado.fecha),
+          (diaFeriado ? diaFeriado + ' · ' : '') + feriado.nombre,
+          null,
+          null
+        )
       : baldosa('Proximo feriado', '--', '', null, null));
 
     caja.innerHTML = partes.join('');
@@ -10323,6 +10332,23 @@
     const partes = String(iso || '').split('-');
     if (partes.length < 3) return '--';
     return partes[2] + '-' + partes[1];
+  }
+
+  // Que dia cae importa mas que la fecha: un feriado en martes es un dia suelto
+  // y uno en lunes es fin de semana largo.
+  //
+  // La fecha se arma pieza por pieza y NO con new Date('2026-10-12'): asi
+  // escrita, el navegador la lee como medianoche de Londres, que en Argentina
+  // son las nueve de la noche del dia anterior, y el feriado del lunes
+  // aparecia como domingo.
+  const DIAS_SEMANA = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+
+  function diaDeLaSemana(iso) {
+    const partes = String(iso || '').split('-');
+    if (partes.length < 3) return '';
+    const fecha = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+    if (isNaN(fecha.getTime())) return '';
+    return DIAS_SEMANA[fecha.getDay()];
   }
 
   function renderNotesPanelClock() {
