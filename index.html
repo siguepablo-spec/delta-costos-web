@@ -7359,8 +7359,8 @@
               <div id="panelIndicadores" class="clima-indicadores" aria-label="Indicadores"></div>
             </section>
 
-            <article class="tech-ticker" aria-label="Noticias tech">
-              <span>TECH</span>
+            <article class="tech-ticker" aria-label="Noticias de Cordoba, economia y politica">
+              <span>NOTICIAS</span>
               <div class="ticker-window">
                 <div id="techTickerTrack" class="ticker-track">Sin datos</div>
               </div>
@@ -8432,7 +8432,7 @@
   }
 
   function loadNotesInfoPanel() {
-    Promise.allSettled([fetchWeatherPanel(), fetchTechNewsPanel(), fetchIndicadores()]).then(results => {
+    Promise.allSettled([fetchWeatherPanel(), fetchNoticiasPanel(), fetchIndicadores()]).then(results => {
       const previo = state.notesPanel || {};
       state.notesPanel = {
         weather: results[0].status === 'fulfilled' ? results[0].value : { ok: false },
@@ -8512,17 +8512,22 @@
     }).catch(() => ({ ok: false }));
   }
 
-  function fetchTechNewsPanel() {
-    return fetch('https://hn.algolia.com/api/v1/search_by_date?tags=story&hitsPerPage=12')
-      .then(response => {
-        if (!response.ok) throw new Error('Noticias sin datos');
-        return response.json();
-      })
+  // Titulares de Cordoba, economia y politica.
+  //
+  // Los pide al servidor del taller y no directo a los diarios porque esta
+  // pantalla es estatica y ningun diario argentino manda el permiso de origen
+  // cruzado que el navegador exige. Se probaron Google News, La Voz, Ambito,
+  // Infobae y Reddit: ninguno se deja leer desde aca.
+  //
+  // Del otro lado la respuesta esta cacheada diez minutos, asi que preguntar
+  // seguido -o desde varios aparatos- no sale mas caro.
+  const NOTICIAS_URL =
+    'https://script.google.com/macros/s/AKfycby81Xt4PqGnZ-bIRA25GKQRf75qKICcjYMDSKI2nij3mnXB7U9ntT10N8E_663ogojS9w/exec?q=noticias';
+
+  function fetchNoticiasPanel() {
+    return pedirJson(NOTICIAS_URL)
       .then(data => {
-        const items = (data.hits || []).filter(item => item && item.title).slice(0, 10).map(item => ({
-          title: item.title,
-          points: Number(item.points) || 0
-        }));
+        const items = (data && data.items || []).filter(item => item && item.titulo);
         return { ok: items.length > 0, items: items };
       })
       .catch(() => ({ ok: false, items: [] }));
@@ -10206,7 +10211,7 @@
     const track = document.getElementById('techTickerTrack');
     const items = news.ok && news.items && news.items.length ? news.items : [];
     const text = items.length
-      ? items.map(item => `${item.title}${item.points ? ' · ' + item.points + ' pts' : ''}`).join('  •  ')
+      ? items.map(item => `${item.titulo}${item.fuente ? ' · ' + item.fuente : ''}`).join('  •  ')
       : 'Sin datos';
     track.textContent = `${text}  •  ${text}`;
 
